@@ -25,23 +25,35 @@ const { projects } = Astro.props;
                 {name}
               </h3>
               <p class="text-base text-neutral">{summary}</p>
-              <div class="flex gap-5 pt-10 text-white">
+              <div class="relative z-10 flex gap-5 pt-10">
                 {linkSource && (
                   <a
                     href={linkSource}
                     target="_blank"
-                    class="after:relative after:bottom-[-5px] after:content-[url(/external.svg)] hover:underline"
+                    rel="noopener noreferrer"
+                    class="inline-flex items-center gap-1.5 rounded-lg border border-white/20 bg-[#1c232d] px-4 py-2 text-sm text-white transition-colors hover:bg-white/10"
                   >
                     Source
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                      <polyline points="15 3 21 3 21 9"/>
+                      <line x1="10" y1="14" x2="21" y2="3"/>
+                    </svg>
                   </a>
                 )}
                 {linkPreview && (
                   <a
                     href={linkPreview}
                     target="_blank"
-                    class="after:relative after:bottom-[-5px] after:content-[url(/external.svg)] hover:underline"
+                    rel="noopener noreferrer"
+                    class="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm text-white transition-colors hover:bg-primary/90"
                   >
                     Preview
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                      <polyline points="15 3 21 3 21 9"/>
+                      <line x1="10" y1="14" x2="21" y2="3"/>
+                    </svg>
                   </a>
                 )}
               </div>
