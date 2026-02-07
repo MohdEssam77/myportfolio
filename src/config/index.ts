@@ -26,7 +26,7 @@ export const SITE_CONTENT: SiteContent = {
     summary:
       "Computer science student at Universität des Saarlandes and a fullstack developer at PersonalClientCare (PCC).",
     email: "mohammedhalboub23@gmail.com",
-    phone: "+491234567890",
+    phone: "+49 176 74522561",
   },
   experience: [
     {
