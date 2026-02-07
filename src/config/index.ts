@@ -86,21 +86,21 @@ export const SITE_CONTENT: SiteContent = {
     },
     {
       name: "Q-Wordle",
-      summary: "Wordle is a game similar to Mastermind. The goal is to guess a word in as few attempts as possible. This also supports quantum wordle.",
+      summary: "Wordle is a game similar to Mastermind. The goal is to guess a word in as few attempts as possible. It also supports Quantum Wordle (putting a quantum twist on the game).",
       linkSource: "https://github.com/MohdEssam77/Q-Wordle",
       image: "/qwordle.jpg",
-    },
-    {
-      name: "Finance Website",
-      summary: "Built a full-stack finance website with Flask, HTML, CSS, and JavaScript. (final project for CS50x course)",
-      linkSource: "https://github.com/MohdEssam77/Finance",
-      image: "/finance.jpeg",
     },
     {
       name: "MiniCompiler",
       summary: "Developed a mini compiler using OCaml. It is my first project and it was done as part of a university course.",
       linkSource: "https://github.com/MohdEssam77/miniCompiler",
       image: "/ocaml.png",
+    },
+    {
+      name: "Finance Website",
+      summary: "Built a full-stack finance website with Flask, HTML, CSS, and JavaScript. (final project for CS50x course)",
+      linkSource: "https://github.com/MohdEssam77/Finance",
+      image: "/finance.jpeg",
     },
   ],
   about: {
