@@ -15,14 +15,10 @@ const { projects } = Astro.props;
     projects.map(({ name, summary, image, linkPreview, linkSource }, index) => {
       const topDesktop = 98 + index * 40;
       const zIndex = index + 1;
-      const topMobile = 88;
-      const stackStep = 12;
-      const stackMaxSteps = 4;
-      const stackOffset = Math.min(index, stackMaxSteps) * stackStep;
       return (
         <div
-          style={`--card-top-mobile: ${topMobile + stackOffset}px; --card-top-desktop: ${topDesktop}px; z-index: ${zIndex};`}
-          class="sticky top-[var(--card-top-mobile)] mb-12 rounded-2xl border border-neutral/20 bg-black sm:top-[var(--card-top-desktop)]"
+          style={`--i: ${index}; --card-top-desktop: ${topDesktop}px; z-index: ${zIndex};`}
+          class="sticky top-[calc(88px+min(var(--i)*12px,25vh))] mb-12 rounded-2xl border border-neutral/20 bg-black sm:top-[var(--card-top-desktop)]"
         >
           <div
             class="bg-difu relative z-[1] flex flex-col overflow-hidden rounded-2xl bg-[#1c232d] before:absolute before:inset-0 before:z-[-1] before:rounded-2xl before:bg-[url(/raja.png)] before:bg-[length:128px] before:bg-repeat before:opacity-[5%] before:content-[''] sm:grid sm:min-h-0 sm:grid-cols-2 sm:grid-rows-1 sm:bg-[#1c232d]/85 md:h-96"
