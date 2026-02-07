@@ -62,7 +62,7 @@ export const SITE_CONTENT: SiteContent = {
     },
     {
       name: "DreamTransport",
-      summary: "Public transport optimization system for Neumarkt i.d. OPf. to improve bus routes and stops using passenger data, punctuality analysis, and mathematical optimization algorithms.",
+      summary: "Optimizing Neumarkt's bus network through data-driven performance and mathematical modeling.",
       linkSource: "https://github.com/MohdEssam77/DreamTransport",
       image: "/dream_transport.gif",
     },
@@ -77,6 +77,24 @@ export const SITE_CONTENT: SiteContent = {
       summary: "AI assistant capable of code execution, file operations, browsing, and searches.",
       linkSource: "https://github.com/MohdEssam77/UdS_Operator",
       image: "/uds_operator.png",
+    },
+    {
+      name: "VoiceOasis",
+      summary: "Hackathon-winning real-time voice enhancement and conversational memory system with speaker recognition, designed under strict latency and privacy constraints.",
+      linkSource: "https://github.com/MohdEssam77/Voice_Oasis",
+      image: "/voice_oasis.png",
+    },
+    {
+      name: "Q-Wordle",
+      summary: "Wordle is a game similar to Mastermind. The goal is to guess a word in as few attempts as possible. This also supports quantum wordle.",
+      linkSource: "https://github.com/MohdEssam77/Q-Wordle",
+      image: "/qwordle.jpg",
+    },
+    {
+      name: "Finance Website",
+      summary: "Built a full-stack finance website with Flask, HTML, CSS, and JavaScript. (final project for CS50x course)",
+      linkSource: "https://github.com/MohdEssam77/Finance",
+      image: "/finance.jpeg",
     },
     {
       name: "MiniCompiler",
