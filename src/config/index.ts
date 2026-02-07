@@ -80,13 +80,13 @@ export const SITE_CONTENT: SiteContent = {
     },
     {
       name: "VoiceOasis",
-      summary: "Hackathon-winning real-time voice enhancement and conversational memory system with speaker recognition, designed under strict latency and privacy constraints.",
+      summary: "Award-winning, low-latency voice AI with private speaker recognition and conversational memory.",
       linkSource: "https://github.com/MohdEssam77/Voice_Oasis",
       image: "/voice_oasis.png",
     },
     {
       name: "Q-Wordle",
-      summary: "Wordle is a game similar to Mastermind. The goal is to guess a word in as few attempts as possible. This also supports quantum wordle.",
+      summary: "A Mastermind-style word game supporting both classic and Quantum Wordle.",
       linkSource: "https://github.com/MohdEssam77/Q-Wordle",
       image: "/qwordle.jpg",
     },
