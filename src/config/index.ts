@@ -10,6 +10,7 @@ export const SITE_CONFIG: SiteConfig = {
   navLinks: [
     { text: "Experience", href: "#experience" },
     { text: "Projects", href: "#projects" },
+    { text: "Hackathons", href: "#hackathons" },
     { text: "About", href: "#about" },
   ],
   socialLinks: [
@@ -96,6 +97,50 @@ export const SITE_CONTENT: SiteContent = {
       linkSource: "https://github.com/MohdEssam77/miniCompiler",
       image: "/ocaml.png",
     }
+  ],
+  hackathons: [
+    {
+      name: "MITTELSTAND HACKATHON",
+      location: "Neumarkt in der Oberpfalz, Germany",
+      summary: "Klebl GmbH challenge. Built Klebl AI. Used YOLOv11 and Gemini API to analyze construction blueprints, reducing analysis time by 90%.",
+      rank: "Winner (1st Place)",
+      images: ["/mittelstand.png", "/mittelstand2.jpeg", "/mittelstand3.jpeg"],
+      link: "https://github.com/MohdEssam77/Klebl-AI",
+    },
+    {
+      name: "{Tech: Europe} AI Hackathon",
+      location: "Munich, Germany",
+      summary: "Built UdS OP (Universal Desktop Assistant). AI assistant capable of code execution, file operations, browsing, and searches.",
+      rank: "3rd Place",
+      images: ["/munichhack.jpeg"],
+      link: "https://github.com/MohdEssam77/UdS_Operator",
+    },
+    {
+      name: "START HACK 2025",
+      location: "St. Gallen, Switzerland",
+      summary: "Biggest one I've ever attended. Co-developed VoiceOasis, a real-time, privacy-focused voice AI for robotics featuring speaker recognition and conversational memory.",
+      rank: "3rd Place",
+      images: ["/start_hack1.jpeg", "/start_hack2.jpeg"],
+      link: "https://github.com/MohdEssam77/Voice_Oasis",
+    },
+    {
+      name: "SwissHacks",
+      location: "Zurich, Switzerland",
+      summary: "Biggest one I've ever attended. Built SwissInsight — an AI-driven startup analytics platform that turns Swiss startup data into insights through natural language.",
+      rank: "2nd Place",
+      images: ["/swisshacks3.gif", "/swisshacks1.jpeg", "/swisshacks2.jpeg"],
+      link: "https://github.com/MohdEssam77/innosuisse-startupticker",
+      preview: "https://innosuisse-startupticker-dp5myu4aawkhwuopq74ev9.streamlit.app/",
+    },
+    
+    {
+      name: "Servus AI Summer",
+      location: "Neumarkt in der Oberpfalz, Germany",
+      summary: "DreamTransport: Optimization system for Neumarkt i.d. OPf. to improve bus routes using passenger data, punctuality analysis, and mathematical algorithms.",
+      rank: "2nd Place",
+      images: ["/dream_transport.gif", "/servus2.jpeg", "/servus1.jpeg"],
+      link: "https://github.com/MohdEssam77/DreamTransport",
+    },
   ],
   about: {
     description: `
