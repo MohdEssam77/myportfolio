@@ -12,6 +12,7 @@ export const SITE_CONFIG: SiteConfig = {
     { text: "Projects", href: "#projects" },
     { text: "Hackathons", href: "#hackathons" },
     { text: "About", href: "#about" },
+    { text: "Contact", href: "#contact" },
   ],
   socialLinks: [
     { text: "Github", href: "https://github.com/MohdEssam77" },
