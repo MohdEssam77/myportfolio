@@ -117,6 +117,24 @@ const { email } = Astro.props;
   </form>
 </Section>
 
+<style>
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  textarea:-webkit-autofill,
+  textarea:-webkit-autofill:hover,
+  textarea:-webkit-autofill:focus {
+    -webkit-text-fill-color: white !important;
+    background-color: rgba(0, 0, 0, 0.5) !important;
+    transition: background-color 5000s ease-in-out 0s;
+  }
+  
+  input:-webkit-autofill::first-line,
+  textarea:-webkit-autofill::first-line {
+    color: white !important;
+  }
+</style>
+
 <script>
   const form = document.querySelector('form') as HTMLFormElement;
   const result = document.getElementById('form-result') as HTMLDivElement;
