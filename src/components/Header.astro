@@ -69,8 +69,8 @@ const { siteLogo, navLinks } = Astro.props;
     item?.addEventListener("click", toggleMenu);
   });
 
-  // Update navigation based on scroll position with Intersection Observer
-  const updateActiveNav = (sectionId) => {
+  // Update navigation based on scroll position
+  const updateActiveNav = (sectionId: string) => {
     navItems.forEach((item) => {
       const href = item.getAttribute("href");
       if (href === `#${sectionId}`) {
@@ -81,65 +81,38 @@ const { siteLogo, navLinks } = Astro.props;
     });
   };
 
-  // Track all sections and their intersection ratios
-  const sectionRatios = new Map();
-  
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        const sectionId = entry.target.id;
-        if (entry.isIntersecting) {
-          sectionRatios.set(sectionId, entry.intersectionRatio);
-        } else {
-          sectionRatios.delete(sectionId);
-        }
-      });
-      
-      // Find the section with the highest intersection ratio
-      let maxRatio = 0;
-      let activeSection = "";
-      
-      sectionRatios.forEach((ratio, sectionId) => {
-        if (ratio > maxRatio) {
-          maxRatio = ratio;
-          activeSection = sectionId;
-        }
-      });
-      
-      // If no section has a high enough ratio, find the section closest to viewport top
-      if (!activeSection || maxRatio < 0.3) {
-        const sections = document.querySelectorAll("section");
-        let closestSection = "";
-        let closestDistance = Infinity;
-        
-        sections.forEach((section) => {
-          const rect = section.getBoundingClientRect();
-          const distance = Math.abs(rect.top);
-          
-          // Prefer sections that are at or above the viewport top
-          if (rect.top <= 100 && distance < closestDistance) {
-            closestDistance = distance;
-            closestSection = section.id;
-          }
-        });
-        
-        if (closestSection) {
-          activeSection = closestSection;
-        }
+  // Active section = last section whose top is at or above a line near the top of the viewport.
+  // This works reliably with sticky layouts (e.g. Hackathons) where intersection ratio is misleading.
+  const getActiveSection = () => {
+    const sections = document.querySelectorAll("section");
+    const triggerOffset = 120; // px from top of viewport
+    let activeSection = "";
+    
+    for (const section of sections) {
+      const rect = section.getBoundingClientRect();
+      if (rect.top <= triggerOffset) {
+        activeSection = section.id;
+      } else {
+        break;
       }
-      
-      // Update navigation if we have an active section
-      if (activeSection) {
-        updateActiveNav(activeSection);
-      }
-    },
-    { threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0] },
-  );
+    }
+    // At top of page, no section has crossed the line yet — highlight first section
+    if (!activeSection && sections.length) {
+      activeSection = sections[0].id;
+    }
+    return activeSection;
+  };
 
-  // Observe all sections
-  document.querySelectorAll("section").forEach((section) => {
-    observer.observe(section);
-  });
+  const updateNavFromScroll = () => {
+    const activeSection = getActiveSection();
+    if (activeSection) {
+      updateActiveNav(activeSection);
+    }
+  };
+
+  updateNavFromScroll();
+  window.addEventListener("scroll", updateNavFromScroll, { passive: true });
+  window.addEventListener("resize", updateNavFromScroll);
 
   // Also handle hash changes (when clicking nav links)
   const handleHashChange = () => {
@@ -156,16 +129,6 @@ const { siteLogo, navLinks } = Astro.props;
     setTimeout(handleHashChange, 100);
   }
 
-  // Cleanup observer
-  document.onvisibilitychange = () => {
-    if (document.visibilityState === "hidden") {
-      observer.disconnect();
-    } else {
-      document.querySelectorAll("section").forEach((section) => {
-        observer.observe(section);
-      });
-    }
-  };
 </script>
 
 <style>
