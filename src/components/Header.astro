@@ -70,26 +70,91 @@ const { siteLogo, navLinks } = Astro.props;
   });
 
   // Update navigation based on scroll position with Intersection Observer
+  const updateActiveNav = (sectionId) => {
+    navItems.forEach((item) => {
+      const href = item.getAttribute("href");
+      if (href === `#${sectionId}`) {
+        item.classList.add("text-white", "md:after:opacity-100");
+      } else {
+        item.classList.remove("text-white", "md:after:opacity-100");
+      }
+    });
+  };
+
+  // Track all sections and their intersection ratios
+  const sectionRatios = new Map();
+  
   const observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
+        const sectionId = entry.target.id;
         if (entry.isIntersecting) {
-          navItems.forEach((item) => {
-            if (item.getAttribute("href") === `#${entry.target.id}`) {
-              item.classList.add("text-white", "md:after:opacity-100");
-            } else {
-              item.classList.remove("text-white", "md:after:opacity-100");
-            }
-          });
+          sectionRatios.set(sectionId, entry.intersectionRatio);
+        } else {
+          sectionRatios.delete(sectionId);
         }
       });
+      
+      // Find the section with the highest intersection ratio
+      let maxRatio = 0;
+      let activeSection = "";
+      
+      sectionRatios.forEach((ratio, sectionId) => {
+        if (ratio > maxRatio) {
+          maxRatio = ratio;
+          activeSection = sectionId;
+        }
+      });
+      
+      // If no section has a high enough ratio, find the section closest to viewport top
+      if (!activeSection || maxRatio < 0.3) {
+        const sections = document.querySelectorAll("section");
+        let closestSection = "";
+        let closestDistance = Infinity;
+        
+        sections.forEach((section) => {
+          const rect = section.getBoundingClientRect();
+          const distance = Math.abs(rect.top);
+          
+          // Prefer sections that are at or above the viewport top
+          if (rect.top <= 100 && distance < closestDistance) {
+            closestDistance = distance;
+            closestSection = section.id;
+          }
+        });
+        
+        if (closestSection) {
+          activeSection = closestSection;
+        }
+      }
+      
+      // Update navigation if we have an active section
+      if (activeSection) {
+        updateActiveNav(activeSection);
+      }
     },
-    { threshold: 0.5 },
+    { threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0] },
   );
 
+  // Observe all sections
   document.querySelectorAll("section").forEach((section) => {
     observer.observe(section);
   });
+
+  // Also handle hash changes (when clicking nav links)
+  const handleHashChange = () => {
+    const hash = window.location.hash.slice(1); // Remove the #
+    if (hash) {
+      updateActiveNav(hash);
+    }
+  };
+
+  window.addEventListener("hashchange", handleHashChange);
+  
+  // Check initial hash on page load
+  if (window.location.hash) {
+    setTimeout(handleHashChange, 100);
+  }
 
   // Cleanup observer
   document.onvisibilitychange = () => {
