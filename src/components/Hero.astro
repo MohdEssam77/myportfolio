@@ -21,10 +21,6 @@ const { name, specialty, summary, email, phone } = Astro.props;
   </p>
 
   <div class="flex flex-wrap gap-4">
-    <a
-      class="inline-block rounded-full bg-primary px-8 py-5 text-sm leading-5 font-medium text-[#fff]"
-      href={`mailto:${email}`}>Email Me</a
-    >
     {phone && (
       <a
         class="inline-block rounded-full bg-primary px-8 py-5 text-sm leading-5 font-medium text-[#fff]"
@@ -33,7 +29,12 @@ const { name, specialty, summary, email, phone } = Astro.props;
     )}
     <a
       class="inline-block rounded-full bg-primary px-8 py-5 text-sm leading-5 font-medium text-[#fff]"
-      href="#contact">Contact Form</a
+      href="#contact">Contact Me</a
+    >
+    <a
+      class="inline-block rounded-full bg-primary px-8 py-5 text-sm leading-5 font-medium text-[#fff]"
+      href="/Halboup_Mohammed.pdf"
+      download="Mohammed_Halboup_Resume.pdf">Download Resume</a
     >
   </div>
 </section>
