@@ -159,14 +159,6 @@ experience: [
 ],
 ```
 
----
-
-## 📄 License
-
-This project is open source and available under the [MIT License](LICENSE).
-
----
-
 ## 📄 Resume
 
 The most recent version of my resume is always available for download in the navigation bar at the top of the page. Click "Resume" to download the latest PDF version.
