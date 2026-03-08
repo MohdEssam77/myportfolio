@@ -67,7 +67,7 @@ export const SITE_CONTENT: SiteContent = {
       summary: "Live precious metals spot prices, charts, and price alerts.",
       linkPreview: "https://metalpulse-production-941e.up.railway.app/",
       linkSource: "https://github.com/MohdEssam77/MetalPulse",
-      image: "/metal_pulse.png",
+      image: "/metalPulse.gif",
     },
     {
       name: "DreamTransport",
