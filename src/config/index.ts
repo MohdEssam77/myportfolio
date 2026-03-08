@@ -67,7 +67,7 @@ export const SITE_CONTENT: SiteContent = {
       summary: "Natural language query system for Swiss startup data using SPARQL and semantic search",
       linkPreview: "https://metalpulse-production-941e.up.railway.app/",
       linkSource: "https://github.com/MohdEssam77/MetalPulse",
-      image: "/swiss.png",
+      image: "/metal_pulse.png",
     },
     {
       name: "DreamTransport",
