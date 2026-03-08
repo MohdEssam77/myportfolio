@@ -57,14 +57,14 @@ export const SITE_CONTENT: SiteContent = {
   projects: [
     {
       name: "SwissInsight",
-      summary: "Live precious metals spot prices, charts, and price alerts.",
+      summary: "Natural language query system for Swiss startup data using SPARQL and semantic search",
       linkPreview: "https://innosuisse-startupticker-dp5myu4aawkhwuopq74ev9.streamlit.app/",
       linkSource: "https://github.com/MohdEssam77/innosuisse-startupticker",
       image: "/swiss.png",
     },
     {
       name: "MetalPulse",
-      summary: "Natural language query system for Swiss startup data using SPARQL and semantic search",
+      summary: "Live precious metals spot prices, charts, and price alerts.",
       linkPreview: "https://metalpulse-production-941e.up.railway.app/",
       linkSource: "https://github.com/MohdEssam77/MetalPulse",
       image: "/metal_pulse.png",
