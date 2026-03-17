@@ -57,7 +57,7 @@ export const SITE_CONTENT: SiteContent = {
   projects: [
     {
       name: "MetalPulse",
-      summary: "Live precious metals spot prices, charts, and price alerts.",
+      summary: "Real-time precious metals dashboard with live spot prices, ETF tracking, price alerts, market news, and an AI-powered market analyst chat.",
       linkPreview: "https://metalpulse-production-941e.up.railway.app/",
       linkSource: "https://github.com/MohdEssam77/MetalPulse",
       image: "/metalPulse.gif",
