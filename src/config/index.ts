@@ -63,6 +63,13 @@ export const SITE_CONTENT: SiteContent = {
       image: "/metalPulse.gif",
     },
     {
+      name: "InkedIn",
+      summary: "Generate engaging, professional LinkedIn posts in seconds. Customize the tone, style, and personality. ",
+      linkPreview: "https://inkedin-gamma.vercel.app/",
+      linkSource: "https://github.com/MohdEssam77/Inkedin",
+      image: "/inkedin.png",
+    },
+    {
       name: "SwissInsight",
       summary: "Natural language query system for Swiss startup data using SPARQL and semantic search",
       linkPreview: "https://innosuisse-startupticker-dp5myu4aawkhwuopq74ev9.streamlit.app/",
