@@ -1,24 +1,9 @@
 ---
 import Section from "./Section.astro";
-
-interface Props {
-  email: string;
-}
-
-const { email } = Astro.props;
 ---
 
 <Section text="Contact" href="contact">
-  <form
-    action="https://api.web3forms.com/submit"
-    method="POST"
-    class="mx-auto max-w-2xl"
-  >
-    <input type="hidden" name="access_key" value="50279276-3c43-4296-b98c-9733f79d91f8" />
-    <input type="hidden" name="to" value={email} />
-    <input type="hidden" name="subject" value="New Contact Form Submission" />
-    <input type="hidden" name="from_name" value="Portfolio Contact Form" />
-
+  <form action="/api/contact" method="POST" class="mx-auto max-w-2xl">
     <div class="grid gap-6 sm:grid-cols-2">
       <div class="flex flex-col gap-2">
         <label for="firstName" class="text-sm font-medium text-neutral">
@@ -128,7 +113,7 @@ const { email } = Astro.props;
     background-color: rgba(0, 0, 0, 0.5) !important;
     transition: background-color 5000s ease-in-out 0s;
   }
-  
+
   input:-webkit-autofill::first-line,
   textarea:-webkit-autofill::first-line {
     color: white !important;
@@ -136,35 +121,35 @@ const { email } = Astro.props;
 </style>
 
 <script>
-  const form = document.querySelector('form') as HTMLFormElement;
-  const result = document.getElementById('form-result') as HTMLDivElement;
+  const form = document.querySelector("form") as HTMLFormElement;
+  const result = document.getElementById("form-result") as HTMLDivElement;
 
-  form.addEventListener('submit', async (e) => {
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
     const formData = new FormData(form);
 
     try {
       const response = await fetch(form.action, {
-        method: 'POST',
+        method: "POST",
         body: formData,
       });
 
       const data = await response.json();
 
       if (data.success) {
-        result.className = 'mt-4 text-sm text-green-400';
-        result.textContent = 'Thank you! Your message has been sent successfully.';
-        result.classList.remove('hidden');
+        result.className = "mt-4 text-sm text-green-400";
+        result.textContent = "Thank you! Your message has been sent successfully.";
+        result.classList.remove("hidden");
         form.reset();
       } else {
-        result.className = 'mt-4 text-sm text-red-400';
-        result.textContent = 'Something went wrong. Please try again.';
-        result.classList.remove('hidden');
+        result.className = "mt-4 text-sm text-red-400";
+        result.textContent = data.message || "Something went wrong. Please try again.";
+        result.classList.remove("hidden");
       }
     } catch {
-      result.className = 'mt-4 text-sm text-red-400';
-      result.textContent = 'Something went wrong. Please try again.';
-      result.classList.remove('hidden');
+      result.className = "mt-4 text-sm text-red-400";
+      result.textContent = "Something went wrong. Please try again.";
+      result.classList.remove("hidden");
     }
   });
 </script>
