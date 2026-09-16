@@ -33,12 +33,23 @@ export const SITE_CONTENT: SiteContent = {
     {
       company: "PersonalClientCare (PCC)",
       position: "Fullstack Developer",
-      startDate: "2025",
+      startDate: " September, 2025",
       endDate: "Present",
       summary: [
         "Developing user-facing UI features and backend automation for application.",
         "Designining and implementing backend APIs and data workflows supporting intelligent automation.",
         "Delivering scalable, production-ready improvements in an agile engineering environment.",
+      ],
+    },
+    {
+      company: "Universität des Saarlandes",
+      position: "Software Engineering Lab Teaching Assistant",
+      startDate: "August, 2026",
+      endDate: "Present",
+      summary: [
+        "Architected and developed Saar la carte, a comprehensive restaurant simulation platform with end-to-end workflows, including environment management, customer interactions, order processing, service delivery, and incident handling.",
+        "Mentored students through the complete software engineering lifecycle, providing guidance on system design, implementation, testing strategies, and debugging techniques across multiple project phases.",
+        "Designed and implemented comprehensive validation, component, and scenario tests that serve as course assessment criteria, ensuring code quality and proper software engineering practices.",
       ],
     },
     {
