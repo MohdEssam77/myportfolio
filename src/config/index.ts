@@ -17,7 +17,6 @@ export const SITE_CONFIG: SiteConfig = {
   socialLinks: [
     { text: "Github", href: "https://github.com/MohdEssam77" },
     { text: "LinkedIn", href: "https://www.linkedin.com/in/mohammedhalboup-7e10/" },
-    { text: "Instagram", href: "https://www.instagram.com/iamm.esam/" },
   ],
 };
 
@@ -105,12 +104,6 @@ export const SITE_CONTENT: SiteContent = {
       summary: "Wordle is a game similar to Mastermind. The goal is to guess a word in as few attempts as possible. It also supports Quantum Wordle (putting a quantum twist on the game).",
       linkSource: "https://github.com/MohdEssam77/Q-Wordle",
       image: "/qwordle.jpg",
-    },
-    {
-      name: "MiniCompiler",
-      summary: "Developed a mini compiler using OCaml (functional programming language). It is my first project and it was done as part of a university course (Programming 1) at Saarland University.",
-      linkSource: "https://github.com/MohdEssam77/miniCompiler",
-      image: "/ocaml.png",
     }
   ],
   hackathons: [
