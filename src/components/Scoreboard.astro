@@ -54,7 +54,7 @@ const phases = navLinks.map((link) => ({
         BOR<span class="sr-only"> ({PLAYER.rival})</span>
       </span>
       <span
-        class="match-clock ml-1 flex items-center gap-1.5 rounded-md bg-chalk/5 px-2 py-1 font-mono text-xs font-medium text-chalk normal-case"
+        class="match-clock ml-1 flex w-[4.5rem] shrink-0 items-center justify-center gap-1.5 rounded-md bg-chalk/5 px-2 py-1 font-mono text-xs font-medium text-chalk normal-case"
         aria-label="Match minute"
       >
         <span class="live-dot size-1.5 rounded-full bg-card-red"></span>
@@ -77,12 +77,12 @@ const phases = navLinks.map((link) => ({
       class="phase-menu rounded-xl border border-chalk/10 bg-pitch/95 p-3 text-muted backdrop-blur-md xl:ml-auto xl:border-0 xl:bg-transparent xl:p-0 xl:backdrop-blur-none"
       id="main-menu"
     >
-      <ul class="gap-1 xl:flex xl:items-center">
+      <ul class="gap-0.5 xl:flex xl:items-center">
         {
           phases.map((link) => (
             <li>
               <a
-                class="nav-item group flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors hover:text-chalk"
+                class="nav-item group flex items-center gap-1.5 rounded-lg px-2 py-2 text-sm font-medium transition-colors hover:text-chalk"
                 href={link.href}
               >
                 {link.minute !== undefined && (
