@@ -12,6 +12,7 @@ import Footer from "@components/Footer.astro";
 import Stadium from "@components/Stadium.astro";
 import PenaltyGame from "@components/PenaltyGame.astro";
 import Terminal from "@components/Terminal.astro";
+import BallCursor from "@components/BallCursor.astro";
 
 const {
   title,
@@ -79,6 +80,7 @@ const ogImgUrl = socialImage ? canonicalURL + socialImage : null;
     <Footer author={author} socialLinks={socialLinks} />
     <PenaltyGame />
     <Terminal />
+    <BallCursor />
 
     <script>
       import { initMagnetic, initReveal, initSmoothScroll } from "@lib/motion";
