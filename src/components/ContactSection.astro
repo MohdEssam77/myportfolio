@@ -161,6 +161,35 @@ const fields: {
     to { transform: translateX(2px) rotate(12deg); }
   }
 
+  .contract::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    background:
+      repeating-linear-gradient(45deg, rgb(232 239 233 / 0.18) 0 1px, transparent 1px 18px),
+      repeating-linear-gradient(-45deg, rgb(232 239 233 / 0.18) 0 1px, transparent 1px 18px);
+  }
+
+  .contract.goal {
+    animation: net-bulge 700ms cubic-bezier(0.3, 1.6, 0.5, 1);
+  }
+
+  .contract.goal::after {
+    animation: net-show 1.2s ease-out;
+  }
+
+  @keyframes net-bulge {
+    35% { transform: scale(1.025) translateY(-6px); }
+  }
+
+  @keyframes net-show {
+    15% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
   .contract-input {
     border: 0;
     border-bottom: 1.5px dashed rgb(232 239 233 / 0.25);
@@ -198,6 +227,9 @@ const fields: {
 </style>
 
 <script>
+  import confetti from "canvas-confetti";
+  import { prefersReducedMotion } from "@lib/motion";
+
   const form = document.getElementById("contact-form") as HTMLFormElement;
   const result = document.getElementById("form-result") as HTMLDivElement;
   const submit = form.querySelector<HTMLButtonElement>("[data-submit]");
@@ -208,6 +240,29 @@ const fields: {
     submit.disabled = pending;
     submit.classList.toggle("is-pending", pending);
     submitLabel.textContent = pending ? "Whistle blown…" : "Send Offer";
+  };
+
+  // GOAL: the net ripples, the signature line signs itself, confetti flies.
+  const celebrate = (name: string) => {
+    const signature = form.querySelector<HTMLElement>(".signature");
+    if (signature) signature.textContent = name;
+    if (prefersReducedMotion()) return;
+
+    form.classList.remove("goal");
+    void form.offsetWidth;
+    form.classList.add("goal");
+
+    const rect = submit?.getBoundingClientRect();
+    confetti({
+      particleCount: 120,
+      spread: 75,
+      startVelocity: 45,
+      origin: rect
+        ? { x: (rect.left + rect.width / 2) / window.innerWidth, y: rect.top / window.innerHeight }
+        : { y: 0.7 },
+      colors: ["#c8ff3d", "#e8efe9", "#ffb020"],
+      disableForReducedMotion: true,
+    });
   };
 
   form.addEventListener("submit", async (e) => {
@@ -224,6 +279,7 @@ const fields: {
       const data = await response.json();
 
       if (data.success) {
+        celebrate(`${formData.get("firstName") ?? ""} ${formData.get("lastName") ?? ""}`.trim());
         result.className = "mt-4 text-sm text-green-400";
         result.textContent = "Thank you! Your message has been sent successfully.";
         result.classList.remove("hidden");
