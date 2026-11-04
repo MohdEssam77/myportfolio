@@ -1,6 +1,6 @@
 # EPIC: MATCHDAY.exe — Portfolio UI Redesign
 
-> **Status:** Approved, in progress
+> **Status:** Implemented on `feat/matchday-redesign`, waiting for review on a Vercel preview before merge (11.10)
 > **Owner:** Mohammed Halboup
 > **Branch:** `feat/matchday-redesign`
 > **Scope:** UI/UX only. All content in `src/config/index.ts` (`SITE_CONTENT`, `SITE_CONFIG`) stays the same.
@@ -65,11 +65,12 @@ It should feel like a stadium at night: dark pitch-green, white chalk lines, flo
 
 | Package | Why |
 |---|---|
-| `gsap` (+ ScrollTrigger) | Scroll-linked choreography (match clock, chalk lines, reveals) |
+| ~~`gsap` (+ ScrollTrigger)~~ | Planned for scroll choreography, removed in the perf pass (see notes) |
 | `lenis` | Smooth scrolling that stays in sync with ScrollTrigger |
 | `@fontsource/big-shoulders-display` | Display font |
 | `@fontsource/jetbrains-mono` | Mono font |
 | `canvas-confetti` | Goal celebration on form submit (tiny) |
+| `sharp` | Added in 11.5 so `astro:assets` can optimize the content images |
 
 No other runtime deps. Everything else is hand-built.
 
@@ -215,13 +216,13 @@ Format: Conventional Commits.
 
 ## 4. Acceptance Criteria (whole epic)
 
-- [ ] Every piece of text, link, image and the contact API from the current site is still present and working.
-- [ ] `pnpm build` (incl. `astro check`) passes on every commit.
-- [ ] Works on Chrome, Firefox, Safari (desktop + iOS) and Android Chrome.
-- [ ] Usable with keyboard only. Dialogs trap focus and return it on close.
-- [ ] `prefers-reduced-motion: reduce` → no scroll-jacking, no parallax, no typewriter; all content visible immediately.
-- [ ] Lighthouse mobile: Performance ≥ 90, Accessibility ≥ 95.
-- [ ] No horizontal scroll at 360px width.
+- [x] Every piece of text, link, image and the contact API from the current site is still present and working.
+- [x] `pnpm build` (incl. `astro check`) passes on every commit. Verified by checking out and building each commit.
+- [ ] Works on Chrome, Firefox, Safari (desktop + iOS) and Android Chrome. *Only Chrome (desktop + mobile emulation) tested so far.*
+- [x] Usable with keyboard only. Dialogs use native `<dialog>` (focus trap + return on close).
+- [x] `prefers-reduced-motion: reduce` → no scroll-jacking, no parallax, no typewriter; all content visible immediately. Audited with `document.getAnimations()`.
+- [ ] Lighthouse mobile: Performance ≥ 90, Accessibility ≥ 95. *Not run yet; first load is ~550 KB (was ~6 MB mid-branch).*
+- [x] No horizontal scroll at 360px width.
 
 ## 5. Risks & Mitigations
 
@@ -232,7 +233,15 @@ Format: Conventional Commits.
 | Formation layout breaks if project count changes | Formation slots generated from `projects.length` in `ui.ts` (4–11 supported), with a list-view fallback. |
 | Trophy tier parsing from free-text `rank` | Simple regex (`1st|Winner` → gold, `2nd` → silver, `3rd` → bronze) with a neutral "medal" default. |
 
-## 6. Decisions (answered by Mohammed)
+## 6. Implementation notes (deviations from the plan)
+
+- **GSAP removed.** It ended up driving a single tween (the tactics-board pass), so it was swapped for a 15-line `tween()` helper and Lenis' own RAF loop. That saves about 110 KB of JS.
+- **Nav collapses below `xl`.** With the sound toggle and VAR chip, the scoreboard no longer fit on laptops, so the phase nav lives in the menu below 1280px and the rival name is abbreviated below 2xl.
+- **Images moved to `src/assets/content`.** Content paths are unchanged; `src/lib/media.ts` resolves them. GIFs stay in `public/` but are served as WebM/MP4 clips with poster frames.
+- **Fixes found while building** (each its own commit): hero section id, contact form selector, smooth scroll under reduced motion, chronological marker numbering, 360px overflow, and a contact-form type error that was squashed into its original commit so every commit builds.
+- **Extras not in the original list:** custom 404 links back to home sections, hidden terminal commands (`sudo`, `var`, `offside`).
+
+## 7. Decisions (answered by Mohammed)
 
 1. **Accent color:** electric lime `floodlight` as primary. The club's black/white/red is too flat as a main palette, so red only appears as a nod (red-card error states, the "LIVE" badge).
 2. **Half-time Stats:** kept. Every number is derived from existing config, so no new content.
