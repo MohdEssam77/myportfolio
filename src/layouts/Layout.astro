@@ -1,5 +1,6 @@
 ---
 import Scoreboard from "@components/Scoreboard.astro";
+import "lenis/dist/lenis.css";
 import "@fontsource/be-vietnam-pro";
 import "@fontsource-variable/gabarito";
 import "@fontsource/big-shoulders-display/latin-700";
@@ -55,5 +56,10 @@ const ogImgUrl = socialImage ? canonicalURL + socialImage : null;
       <slot />
     </main>
     <Footer author={author} socialLinks={socialLinks} />
+
+    <script>
+      import { initSmoothScroll } from "@lib/motion";
+      initSmoothScroll();
+    </script>
   </body>
 </html>
