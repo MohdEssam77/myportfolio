@@ -30,11 +30,9 @@ const formation = [...new Set(slots.map((s) => s.y))]
 <Section text="Featured Projects" href="projects" wide>
   <div class="squad" data-squad data-view="tactics">
     <div class="squad-toolbar mb-6 flex items-center justify-between gap-4">
-      <p class="font-mono text-xs text-muted">
-        <span class="text-floodlight">$</span> ls ./squad <span
-          class="text-chalk/50">--count</span
-        >
-        {projects.length}
+      <p class="font-mono text-xs whitespace-nowrap text-muted">
+        <span class="text-floodlight">$</span> ls ./squad
+        <span class="hidden text-chalk/50 sm:inline">--count {projects.length}</span>
       </p>
       <div
         class="flex rounded-full border border-chalk/15 p-1 font-mono text-xs"
@@ -130,6 +128,68 @@ const formation = [...new Set(slots.map((s) => s.y))]
             ))
           }
         </ul>
+      </div>
+
+      <div class="md:hidden">
+        <ol
+          class="lineup -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-4"
+          aria-label="Squad lineup"
+          data-lineup
+        >
+          {
+            players.map((p) => (
+              <li class="lineup-card relative flex w-[80%] shrink-0 snap-center flex-col overflow-hidden rounded-3xl border border-chalk/10 bg-turf/60">
+                <div class="relative">
+                  <Image
+                    class="aspect-[736/483] w-full object-cover object-left-top"
+                    src={p.image}
+                    alt={p.name}
+                    width="736"
+                    height="483"
+                  />
+                  <span class="absolute -bottom-6 left-4 grid size-14 place-items-center rounded-full border-4 border-turf bg-floodlight font-display text-2xl font-black text-pitch">
+                    {p.number}
+                  </span>
+                </div>
+                <div class="flex flex-1 flex-col p-5 pt-9">
+                  <h3 class="mb-2 font-display text-2xl leading-none font-black text-chalk uppercase">
+                    {p.name}
+                  </h3>
+                  <p class="mb-5 text-sm text-muted">{p.summary}</p>
+                  <div class="mt-auto flex flex-wrap gap-2 font-mono text-xs">
+                    {p.linkSource && (
+                      <a
+                        href={p.linkSource}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="rounded-full bg-floodlight px-4 py-2 font-medium text-pitch"
+                      >
+                        Source
+                      </a>
+                    )}
+                    {p.linkPreview && (
+                      <a
+                        href={p.linkPreview}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="rounded-full px-4 py-2 text-chalk ring-1 ring-chalk/25"
+                      >
+                        Preview
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </li>
+            ))
+          }
+        </ol>
+        <p
+          class="mt-2 text-center font-mono text-xs text-muted"
+          aria-live="polite"
+        >
+          Swipe the lineup · <span class="text-chalk" data-lineup-count>01</span
+          > / {String(players.length).padStart(2, "0")}
+        </p>
       </div>
     </div>
 
@@ -290,6 +350,22 @@ const formation = [...new Set(slots.map((s) => s.y))]
     b.addEventListener("click", () => setView(b.dataset.viewBtn ?? "tactics")),
   );
 
+  // Lineup counter follows the card snapped to the centre.
+  const lineup = document.querySelector<HTMLElement>("[data-lineup]");
+  const lineupCount = document.querySelector<HTMLElement>(
+    "[data-lineup-count]",
+  );
+  lineup?.addEventListener(
+    "scroll",
+    () => {
+      const card = lineup.firstElementChild as HTMLElement | null;
+      if (!card || !lineupCount) return;
+      const index = Math.round(lineup.scrollLeft / (card.offsetWidth + 16));
+      lineupCount.textContent = String(index + 1).padStart(2, "0");
+    },
+    { passive: true },
+  );
+
   const dialog = document.querySelector<HTMLDialogElement>(".scout-dialog");
   const cards = dialog?.querySelectorAll<HTMLElement>("[data-scout]") ?? [];
 
@@ -322,11 +398,12 @@ const formation = [...new Set(slots.map((s) => s.y))]
     display: none;
   }
 
-  /* Until the mobile lineup exists, small screens always get the list. */
-  @media (max-width: 767px) {
-    [data-view="tactics"] .view-list {
-      display: grid;
-    }
+  .lineup {
+    scrollbar-width: none;
+  }
+
+  .lineup::-webkit-scrollbar {
+    display: none;
   }
 
   /* Without JS there is no toggle or dialog, so show the plain list. */
