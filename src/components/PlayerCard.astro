@@ -1,0 +1,103 @@
+---
+import { Image } from "astro:assets";
+import { SITE_CONTENT } from "@config";
+import { PLAYER, deriveStats } from "@ui";
+
+const { hero, about } = SITE_CONTENT;
+const lastName = hero.name.split(" ").slice(1).join(" ");
+const stats = deriveStats(SITE_CONTENT);
+
+const statCells = [
+  { value: stats.projects, label: "PRJ", title: "Projects" },
+  { value: stats.hackathons, label: "HCK", title: "Hackathons" },
+  { value: stats.podiums, label: "POD", title: "Podium finishes" },
+  { value: stats.wins, label: "WIN", title: "Hackathon wins" },
+  { value: stats.roles, label: "EXP", title: "Roles" },
+];
+---
+
+<div class="player-card relative w-[min(330px,86vw)]" data-player-card>
+  <div class="card-tilt relative aspect-[33/47]">
+    <div class="card-inner relative size-full">
+      <article
+        class="card-face card-front absolute inset-0 flex flex-col overflow-hidden rounded-[28px] border border-floodlight/30 p-5"
+        aria-label={`Player card: ${hero.name}`}
+      >
+        <svg
+          class="pointer-events-none absolute inset-0 size-full text-chalk/[0.07]"
+          viewBox="0 0 330 470"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <rect x="14" y="14" width="302" height="442" rx="18"></rect>
+          <line x1="14" y1="235" x2="316" y2="235"></line>
+          <circle cx="165" cy="235" r="52"></circle>
+          <rect x="95" y="14" width="140" height="56"></rect>
+          <rect x="95" y="400" width="140" height="56"></rect>
+        </svg>
+
+        <header class="relative z-10 flex items-start justify-between">
+          <div>
+            <p class="font-display text-6xl leading-[0.8] font-black text-floodlight">{PLAYER.number}</p>
+            <p class="mt-1 font-mono text-[10px] tracking-[0.2em] text-chalk/70 uppercase">Full-stack</p>
+          </div>
+          <div class="flex flex-col items-end gap-1 font-mono text-[10px] tracking-wider uppercase">
+            <span class="rounded border border-chalk/20 px-1.5 py-0.5 text-chalk/80">{PLAYER.uniShort} · CS</span>
+            <span class="rounded border border-chalk/20 px-1.5 py-0.5 text-chalk/80">{PLAYER.club}</span>
+          </div>
+        </header>
+
+        <div class="relative z-10 mt-3 flex-1 overflow-hidden rounded-2xl border border-chalk/10">
+          <Image
+            class="size-full origin-[32%_40%] scale-[2.1] object-cover"
+            src={about.image}
+            width="600"
+            height="800"
+            alt={hero.name}
+            loading="eager"
+          />
+          <div class="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-turf to-transparent"></div>
+          <p
+            class="absolute inset-x-0 bottom-1 text-center font-display text-[2.6rem] leading-none font-black tracking-wide text-chalk uppercase"
+          >
+            {lastName}
+          </p>
+        </div>
+
+        <dl class="relative z-10 mt-4 grid grid-cols-5 gap-1 text-center">
+          {
+            statCells.map(({ value, label, title }) => (
+              <div title={title}>
+                <dt class="sr-only">{title}</dt>
+                <dd class="font-display text-3xl leading-none font-black text-chalk">{value}</dd>
+                <span aria-hidden="true" class="font-mono text-[10px] tracking-widest text-muted">
+                  {label}
+                </span>
+              </div>
+            ))
+          }
+        </dl>
+
+        <footer
+          class="relative z-10 mt-3 flex items-center justify-between border-t border-chalk/10 pt-2.5 font-mono text-[10px] text-muted"
+        >
+          <span>CS @ {PLAYER.uniShort} · {PLAYER.club}</span>
+          <span class="text-floodlight/80">main@{PLAYER.number}c0de</span>
+        </footer>
+      </article>
+    </div>
+  </div>
+</div>
+
+<style>
+  .card-face {
+    background:
+      radial-gradient(120% 80% at 50% 0%, var(--color-turf-light) 0%, transparent 60%),
+      linear-gradient(160deg, var(--color-turf) 0%, #0b261c 55%, #07160f 100%);
+    box-shadow:
+      0 30px 60px -20px rgb(0 0 0 / 0.7),
+      0 0 0 1px rgb(200 255 61 / 0.08) inset;
+  }
+</style>
