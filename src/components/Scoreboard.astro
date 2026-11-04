@@ -32,15 +32,25 @@ const phases = navLinks.map((link) => ({
       />
     </a>
 
-    <div class="flex items-center gap-2 font-display text-lg leading-none font-bold uppercase sm:text-xl">
+    <div
+      class="flex items-center gap-2 font-display text-lg leading-none font-bold uppercase sm:text-xl"
+    >
       <span class="tracking-wide text-chalk">
-        <span class="md:hidden">HAL</span><span class="hidden md:inline">Halboup</span>
+        <span class="md:hidden">HAL</span><span class="hidden md:inline"
+          >Halboup</span
+        >
       </span>
-      <span class="led-box flex items-center gap-1 rounded-md px-2 py-1 text-led">
-        <span data-score-home>0</span><span class="text-led/50">–</span><span>0</span>
+      <span
+        class="led-box flex items-center gap-1 rounded-md px-2 py-1 text-led"
+      >
+        <span data-score-home>0</span><span class="text-led/50">–</span><span
+          >0</span
+        >
       </span>
       <span class="tracking-wide whitespace-nowrap text-muted">
-        <span class="lg:hidden">BOR</span><span class="hidden lg:inline">{PLAYER.rival}</span>
+        <span class="2xl:hidden">BOR</span><span class="hidden 2xl:inline"
+          >{PLAYER.rival}</span
+        >
       </span>
       <span
         class="match-clock ml-1 flex items-center gap-1.5 rounded-md bg-chalk/5 px-2 py-1 font-mono text-xs font-medium text-chalk normal-case"
@@ -54,7 +64,7 @@ const phases = navLinks.map((link) => ({
     <button
       type="button"
       id="menu-button"
-      class="ml-auto rounded-lg px-2 py-1.5 text-muted sm:hidden"
+      class="ml-auto rounded-lg px-2 py-1.5 text-muted xl:hidden"
       aria-expanded="false"
       aria-controls="main-menu"
       aria-label="Open match phases menu"
@@ -63,10 +73,10 @@ const phases = navLinks.map((link) => ({
     </button>
 
     <nav
-      class="phase-menu rounded-xl border border-chalk/10 bg-pitch/95 p-3 text-muted backdrop-blur-md sm:ml-auto sm:border-0 sm:bg-transparent sm:p-0 sm:backdrop-blur-none"
+      class="phase-menu rounded-xl border border-chalk/10 bg-pitch/95 p-3 text-muted backdrop-blur-md xl:ml-auto xl:border-0 xl:bg-transparent xl:p-0 xl:backdrop-blur-none"
       id="main-menu"
     >
-      <ul class="gap-1 sm:flex sm:items-center">
+      <ul class="gap-1 xl:flex xl:items-center">
         {
           phases.map((link) => (
             <li>
@@ -84,7 +94,36 @@ const phases = navLinks.map((link) => ({
             </li>
           ))
         }
-        <li class="mt-2 sm:mt-0 sm:ml-1">
+        <li class="mt-2 xl:mt-0 xl:ml-1">
+          <button
+            type="button"
+            class="sound-toggle flex w-full items-center gap-2 rounded-lg px-2.5 py-2 font-mono text-xs text-muted ring-1 ring-chalk/15 transition-colors hover:text-floodlight hover:ring-floodlight/50"
+            aria-pressed="false"
+            aria-label="Stadium sound"
+            title="Stadium sound"
+            data-sound-toggle
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M11 5 6 9H2v6h4l5 4z"></path>
+              <path
+                class="sound-on"
+                d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"></path>
+              <path class="sound-off" d="m22 9-6 6M16 9l6 6"></path>
+            </svg>
+            <span class="xl:hidden">Sound</span>
+          </button>
+        </li>
+        <li class="mt-2 xl:mt-0">
           <button
             type="button"
             class="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 font-mono text-xs text-muted ring-1 ring-chalk/15 transition-colors hover:text-floodlight hover:ring-floodlight/50"
@@ -94,7 +133,7 @@ const phases = navLinks.map((link) => ({
             <kbd class="rounded bg-chalk/10 px-1.5 text-chalk">/</kbd> VAR
           </button>
         </li>
-        <li class="mt-2 sm:mt-0">
+        <li class="mt-2 xl:mt-0">
           <a
             class="inline-flex items-center gap-2 rounded-lg bg-floodlight px-3.5 py-2 text-sm font-semibold text-pitch transition-transform hover:-translate-y-0.5"
             href="/Halboup_Mohammed.pdf"
@@ -124,23 +163,50 @@ const phases = navLinks.map((link) => ({
 </header>
 
 <script>
+  import { initSound, play, setSoundEnabled, soundEnabled } from "@lib/sound";
+
   // Toggle mobile menu
   const button = document.querySelector("#menu-button");
   const menu = document.querySelector("#main-menu");
-  const navItems = document.querySelectorAll<HTMLAnchorElement>("#main-menu .nav-item");
+  const navItems = document.querySelectorAll<HTMLAnchorElement>(
+    "#main-menu .nav-item",
+  );
 
   const setMenu = (open: boolean) => {
     menu?.toggleAttribute("data-open", open);
     button?.setAttribute("aria-expanded", `${open}`);
   };
 
-  button?.addEventListener("click", () => setMenu(!menu?.hasAttribute("data-open")));
-  document.querySelector("[data-open-terminal]")?.addEventListener("click", () => {
-    setMenu(false);
-    document.dispatchEvent(new CustomEvent("matchday:terminal"));
+  button?.addEventListener("click", () =>
+    setMenu(!menu?.hasAttribute("data-open")),
+  );
+  // Stadium sound: off until the visitor turns it on.
+  const soundToggle = document.querySelector<HTMLButtonElement>(
+    "[data-sound-toggle]",
+  );
+  const syncSound = () =>
+    soundToggle?.setAttribute("aria-pressed", `${soundEnabled()}`);
+  syncSound();
+  initSound();
+  soundToggle?.addEventListener("click", () => {
+    setSoundEnabled(!soundEnabled());
+    syncSound();
+    play("whistle");
   });
-  navItems.forEach((item) => item.addEventListener("click", () => setMenu(false)));
-  document.addEventListener("keydown", (e) => e.key === "Escape" && setMenu(false));
+
+  document
+    .querySelector("[data-open-terminal]")
+    ?.addEventListener("click", () => {
+      setMenu(false);
+      document.dispatchEvent(new CustomEvent("matchday:terminal"));
+    });
+  navItems.forEach((item) =>
+    item.addEventListener("click", () => setMenu(false)),
+  );
+  document.addEventListener(
+    "keydown",
+    (e) => e.key === "Escape" && setMenu(false),
+  );
   document.addEventListener("click", (e) => {
     const target = e.target as Node;
     if (!menu?.contains(target) && !button?.contains(target)) setMenu(false);
@@ -177,7 +243,10 @@ const phases = navLinks.map((link) => ({
 
   const announcePhase = (sectionId: string) => {
     if (sectionId === currentPhase) return;
-    const ids = Array.from(document.querySelectorAll("main section[id]"), (s) => s.id);
+    const ids = Array.from(
+      document.querySelectorAll("main section[id]"),
+      (s) => s.id,
+    );
     const goals = Math.max(0, ids.indexOf(sectionId));
     if (homeScore && homeScore.textContent !== `${goals}`) {
       homeScore.textContent = `${goals}`;
@@ -186,7 +255,9 @@ const phases = navLinks.map((link) => ({
       homeScore.classList.add("goal");
     }
     if (currentPhase) {
-      document.dispatchEvent(new CustomEvent("matchday:phase", { detail: { id: sectionId } }));
+      document.dispatchEvent(
+        new CustomEvent("matchday:phase", { detail: { id: sectionId } }),
+      );
     }
     currentPhase = sectionId;
   };
@@ -207,17 +278,23 @@ const phases = navLinks.map((link) => ({
   // page bottom to 90'. Scrolling between anchors interpolates the minute.
   const header = document.querySelector<HTMLElement>("#scoreboard");
   const clock = document.querySelector<HTMLElement>("[data-clock]");
-  const minutes: Record<string, number> = JSON.parse(header?.dataset.minutes ?? "{}");
+  const minutes: Record<string, number> = JSON.parse(
+    header?.dataset.minutes ?? "{}",
+  );
 
   let anchors: { y: number; minute: number }[] = [];
 
   const measureAnchors = () => {
-    const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+    const maxScroll =
+      document.documentElement.scrollHeight - window.innerHeight;
     anchors = Object.entries(minutes)
       .map(([id, minute]) => {
         const el = document.getElementById(id);
         if (!el) return null;
-        const y = id === "hero" ? 0 : el.getBoundingClientRect().top + window.scrollY - 140;
+        const y =
+          id === "hero"
+            ? 0
+            : el.getBoundingClientRect().top + window.scrollY - 140;
         return { y: Math.min(Math.max(y, 0), maxScroll), minute };
       })
       .filter((a): a is { y: number; minute: number } => a !== null)
@@ -259,7 +336,8 @@ const phases = navLinks.map((link) => ({
 <style>
   .led-box {
     background:
-      radial-gradient(circle, rgb(0 0 0 / 0.55) 1px, transparent 1.4px) 0 0 / 3px 3px,
+      radial-gradient(circle, rgb(0 0 0 / 0.55) 1px, transparent 1.4px) 0 0 /
+        3px 3px,
       #050c09;
     box-shadow: inset 0 0 0 1px rgb(255 176 32 / 0.15);
     text-shadow: 0 0 8px rgb(255 176 32 / 0.65);
@@ -271,11 +349,15 @@ const phases = navLinks.map((link) => ({
   }
 
   @keyframes live {
-    50% { opacity: 0.25; }
+    50% {
+      opacity: 0.25;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .live-dot { animation: none; }
+    .live-dot {
+      animation: none;
+    }
   }
 
   [data-score-home] {
@@ -287,15 +369,22 @@ const phases = navLinks.map((link) => ({
   }
 
   @keyframes goal {
-    0% { transform: translateY(-80%) scale(1.4); color: var(--color-floodlight); }
-    100% { transform: none; }
+    0% {
+      transform: translateY(-80%) scale(1.4);
+      color: var(--color-floodlight);
+    }
+    100% {
+      transform: none;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    [data-score-home]:global(.goal) { animation: none; }
+    [data-score-home]:global(.goal) {
+      animation: none;
+    }
   }
 
-  @media (max-width: 639px) {
+  @media (max-width: 1279px) {
     .phase-menu {
       position: absolute;
       top: 100%;
@@ -321,6 +410,26 @@ const phases = navLinks.map((link) => ({
       padding: 0.75rem;
       font-size: 1.125rem;
     }
+  }
+
+  @media (min-width: 640px) and (max-width: 1279px) {
+    .phase-menu {
+      left: auto;
+      width: 20rem;
+    }
+  }
+
+  .sound-toggle .sound-on,
+  .sound-toggle[aria-pressed="true"] .sound-off {
+    display: none;
+  }
+
+  .sound-toggle[aria-pressed="true"] .sound-on {
+    display: inline;
+  }
+
+  .sound-toggle[aria-pressed="true"] {
+    color: var(--color-floodlight);
   }
 
   .nav-item.is-active {
