@@ -45,7 +45,7 @@ export const SITE_CONTENT: SiteContent = {
       company: "Universität des Saarlandes",
       position: "Software Engineering Lab Teaching Assistant",
       startDate: "August, 2026",
-      endDate: "Present",
+      endDate: "November, 2026",
       summary: [
         "Architected and developed Saar la carte, a comprehensive restaurant simulation platform with end-to-end workflows, including environment management, customer interactions, order processing, service delivery, and incident handling.",
         "Mentored students through the complete software engineering lifecycle, providing guidance on system design, implementation, testing strategies, and debugging techniques across multiple project phases.",
@@ -151,7 +151,7 @@ export const SITE_CONTENT: SiteContent = {
       link: "https://github.com/MohdEssam77/innosuisse-startupticker",
       preview: "https://innosuisse-startupticker-dp5myu4aawkhwuopq74ev9.streamlit.app/",
     },
-    
+
     {
       name: "Servus AI Summer",
       location: "Neumarkt in der Oberpfalz, Germany",
