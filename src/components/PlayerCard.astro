@@ -1,19 +1,11 @@
 ---
 import Media from "./Media.astro";
 import { SITE_CONTENT } from "@config";
-import { PLAYER, deriveStats } from "@ui";
+import { PLAYER, SKILLS, overallRating } from "@ui";
 
 const { hero, about } = SITE_CONTENT;
 const lastName = hero.name.split(" ").slice(1).join(" ");
-const stats = deriveStats(SITE_CONTENT);
-
-const statCells = [
-  { value: stats.projects, label: "PRJ", title: "Projects" },
-  { value: stats.hackathons, label: "HCK", title: "Hackathons" },
-  { value: stats.podiums, label: "POD", title: "Podium finishes" },
-  { value: stats.wins, label: "WIN", title: "Hackathon wins" },
-  { value: stats.roles, label: "EXP", title: "Roles" },
-];
+const overall = overallRating();
 ---
 
 <div class="player-card relative w-[min(330px,86vw)]" data-player-card>
@@ -39,9 +31,12 @@ const statCells = [
         </svg>
 
         <header class="relative z-10 flex items-start justify-between">
-          <div>
-            <p class="font-display text-6xl leading-[0.8] font-black text-floodlight">{PLAYER.number}</p>
-            <p class="mt-1 font-mono text-[10px] tracking-[0.2em] text-chalk/70 uppercase">Full-stack</p>
+          <div class="text-center">
+            <p class="font-display text-6xl leading-[0.8] font-black text-floodlight" aria-label={`Overall rating ${overall}`}>
+              {overall}
+            </p>
+            <p class="mt-1 font-mono text-[10px] tracking-[0.2em] text-chalk/70 uppercase">OVR · FS</p>
+            <p class="mt-0.5 font-display text-lg leading-none font-black text-chalk/80">#{PLAYER.number}</p>
           </div>
           <div class="flex flex-col items-end gap-1 font-mono text-[10px] tracking-wider uppercase">
             <span class="rounded border border-chalk/20 px-1.5 py-0.5 text-chalk/80">{PLAYER.uniShort} · CS</span>
@@ -66,15 +61,20 @@ const statCells = [
           </p>
         </div>
 
-        <dl class="relative z-10 mt-4 grid grid-cols-5 gap-1 text-center">
+        <dl class="relative z-10 mt-3.5 grid grid-cols-2 gap-x-4 gap-y-2">
           {
-            statCells.map(({ value, label, title }) => (
-              <div title={title}>
-                <dt class="sr-only">{title}</dt>
-                <dd class="font-display text-3xl leading-none font-black text-chalk">{value}</dd>
-                <span aria-hidden="true" class="font-mono text-[10px] tracking-widest text-muted">
-                  {label}
-                </span>
+            SKILLS.map(({ code, name, rating }) => (
+              <div class="flex items-center gap-2" title={`${name}: ${rating}`}>
+                <dt class="order-2 min-w-0 flex-1">
+                  <span class="block font-mono text-[11px] tracking-widest text-muted uppercase">
+                    <span aria-hidden="true">{code}</span>
+                    <span class="sr-only">{name}</span>
+                  </span>
+                  <span class="skill-bar mt-1 block h-1 overflow-hidden rounded-full bg-chalk/10" aria-hidden="true">
+                    <span class="block h-full rounded-full bg-floodlight" style={`width:${rating}%`} />
+                  </span>
+                </dt>
+                <dd class="order-1 w-8 font-display text-2xl leading-none font-black text-chalk">{rating}</dd>
               </div>
             ))
           }

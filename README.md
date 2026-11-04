@@ -22,7 +22,7 @@ The site is one 90-minute match. Scrolling is the match clock, and each section 
 
 | Phase | Section | What happens |
 |-------|---------|--------------|
-| 0' | **Kick-off** (hero) | Floodlights flicker on, the name slams in, and a holographic player card (#17) tilts with the cursor and flips to a scouting report |
+| 0' | **Kick-off** (hero) | Floodlights flicker on, the name slams in, and a holographic player card (#17, with skill ratings and an overall rating set in `src/config/ui.ts`) tilts with the cursor and flips to a scouting report |
 | 12' | **Tactics Board** (experience) | Roles are markers on a chalk pitch, joined by passing lines that draw themselves |
 | 30' | **The Squad** (projects) | Projects line up in a formation. Click a player to scout them, or switch to List view |
 | 45' | **Half-time Stats** | Broadcast head-to-head, with every number computed from the content |

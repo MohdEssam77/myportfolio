@@ -15,6 +15,21 @@ export const PLAYER = {
   ],
 };
 
+// Player-card attributes, picked from the Tech Skills on the resume.
+// Ratings are a self-assessment out of 100; tweak them here and the
+// overall rating (the big number on the card) follows.
+export const SKILLS = [
+  { code: "PYT", name: "Python", rating: 92 },
+  { code: "JS", name: "JavaScript", rating: 86 },
+  { code: "SQL", name: "SQL", rating: 84 },
+  { code: "C", name: "C", rating: 80 },
+  { code: "API", name: "Flask · FastAPI", rating: 88 },
+  { code: "GIT", name: "Git · GitHub", rating: 90 },
+];
+
+export const overallRating = () =>
+  Math.round(SKILLS.reduce((sum, s) => sum + s.rating, 0) / SKILLS.length);
+
 // Match minute each section "kicks off" at, used by the scoreboard clock.
 export const SECTION_MINUTES: Record<string, number> = {
   hero: 0,
