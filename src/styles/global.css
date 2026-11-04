@@ -137,10 +137,13 @@ html.scroll-locked {
   overflow: hidden;
 }
 
-/* Accessibility */
-:focus-visible {
-  outline: 2px solid var(--color-floodlight);
-  outline-offset: 3px;
+/* Accessibility. In the base layer so components that style their own
+   focus state (e.g. `outline-none` on the VAR and contract inputs) win. */
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--color-floodlight);
+    outline-offset: 3px;
+  }
 }
 
 .skip-link {
