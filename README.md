@@ -33,14 +33,14 @@ The site is one 90-minute match. Scrolling is the match clock, and each section 
 
 Also:
 
-- 🖥️ **VAR terminal**: press <kbd>/</kbd> or <kbd>Ctrl</kbd>+<kbd>K</kbd> (or tap **VAR** in the scoreboard)
+- 🖥️ **VAR (video assistant remote)**: a terminal-style remote control, press <kbd>/</kbd> or <kbd>Ctrl</kbd>+<kbd>K</kbd> (or tap **VAR** in the scoreboard)
 - 🔊 **Stadium sound**: whistle, crowd and keeper sounds synthesized with WebAudio, **off by default**
 - 🚩 **Custom 404**: "Offside!"
 - ♿ **Accessible**: keyboard friendly, skip link, focus rings, and full `prefers-reduced-motion` support (no intro, no parallax, no autoplaying clips)
 - 📱 **Mobile-first layouts**: swipeable lineup, scrolling trophy shelf, chalk-line timeline
 - ⚡ **Fast**: static Astro build, WebP images via `astro:assets`, GIFs served as small looping videos
 
-### VAR terminal commands
+### VAR commands
 
 | Command | Does |
 |---------|------|
@@ -203,7 +203,7 @@ experience: [
 
 ## 📄 Resume
 
-The most recent version of my resume is always available from the **Resume** button in the scoreboard, the hero's **Download Resume** button, or the `cv` command in the VAR terminal.
+The most recent version of my resume is always available from the **Resume** button in the scoreboard, the hero's **Download Resume** button, or the `cv` command in the VAR.
 
 ---
 

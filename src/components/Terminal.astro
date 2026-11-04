@@ -32,7 +32,7 @@ const data = {
 <dialog
   data-term={JSON.stringify(data)}
   class="var-terminal mx-auto mt-[12vh] w-[min(720px,calc(100vw-2rem))] bg-transparent p-0 text-chalk backdrop:bg-black/60 backdrop:backdrop-blur-[2px]"
-  aria-label="VAR terminal"
+  aria-label="VAR: video assistant remote"
 >
   <div
     class="overflow-hidden rounded-2xl border border-floodlight/25 bg-[#050c09]/95 shadow-2xl"
@@ -46,7 +46,7 @@ const data = {
         <span class="size-2.5 rounded-full bg-floodlight/80"></span>
       </span>
       <span class="flex-1 text-center tracking-[0.2em] uppercase"
-        >VAR · video assistant terminal</span
+        >VAR · video assistant remote</span
       >
       <kbd class="rounded border border-chalk/15 px-1.5">esc</kbd>
     </header>
@@ -208,7 +208,7 @@ const data = {
         print(definition, { text: here, tone: "accent" });
       },
     },
-    exit: { help: "close the terminal", run: () => dialog?.close() },
+    exit: { help: "close the VAR", run: () => dialog?.close() },
   };
 
   // Hidden extras, not listed in `help`.
