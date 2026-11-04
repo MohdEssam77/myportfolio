@@ -2,12 +2,13 @@
 interface Props {
   text: string;
   href: string;
+  wide?: boolean;
 }
 
-const { text, href } = Astro.props;
+const { text, href, wide = false } = Astro.props;
 ---
 
-<section id={href} class="py-24">
+<section id={href} class:list={["py-24", !wide && "mx-auto max-w-3xl"]}>
   <h2
     class="mb-14 font-serif text-4xl font-bold tracking-tighter text-white md:text-5xl"
   >
