@@ -1,0 +1,63 @@
+---
+import { SITE_CONTENT } from "@config";
+import { PLAYER, SECTION_MINUTES, deriveStats } from "@ui";
+
+const stats = deriveStats(SITE_CONTENT);
+const rows = [
+  { label: "Projects", value: stats.projects },
+  { label: "Hackathons", value: stats.hackathons },
+  { label: "Podium finishes", value: stats.podiums },
+  { label: "Hackathon wins", value: stats.wins },
+  { label: "Roles", value: stats.roles },
+];
+const lastName = SITE_CONTENT.hero.name.split(" ").slice(1).join(" ");
+---
+
+<section id="stats" class="mx-auto max-w-3xl py-16" aria-labelledby="stats-title">
+  <div class="halftime overflow-hidden rounded-2xl" data-reveal>
+    <header class="flex items-stretch font-mono text-xs tracking-[0.2em] uppercase">
+      <span class="bg-floodlight px-3 py-2 font-medium text-pitch">{SECTION_MINUTES.stats}'</span>
+      <h2 id="stats-title" class="flex-1 bg-chalk/10 px-4 py-2 text-chalk">Half-time stats</h2>
+    </header>
+
+    <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-x-4 px-5 pt-5 pb-2 font-display font-black tracking-wide uppercase sm:px-8">
+      <span class="text-xl text-chalk sm:text-2xl">{lastName}</span>
+      <span class="text-center font-mono text-[10px] font-normal text-muted">vs</span>
+      <span class="text-right text-xl text-muted sm:text-2xl">{PLAYER.rival}</span>
+    </div>
+
+    <dl class="space-y-4 px-5 pt-3 pb-7 sm:px-8">
+      {
+        rows.map(({ label, value }) => (
+          <div class="stat-row">
+            <div class="grid grid-cols-[3rem_1fr_3rem] items-baseline">
+              <dd class="font-display text-3xl leading-none font-black text-floodlight" data-count={value}>
+                {value}
+              </dd>
+              <dt class="text-center font-mono text-[11px] tracking-[0.2em] text-muted uppercase">{label}</dt>
+              <dd class="text-right font-display text-3xl leading-none font-black text-chalk/40">0</dd>
+            </div>
+            <div class="mt-2 flex h-1.5 gap-1" aria-hidden="true">
+              <span class="stat-bar h-full flex-1 rounded-full bg-floodlight"></span>
+              <span class="h-full w-1 rounded-full bg-chalk/15"></span>
+            </div>
+          </div>
+        ))
+      }
+    </dl>
+  </div>
+</section>
+
+<style>
+  .halftime {
+    background: linear-gradient(180deg, rgb(18 56 42 / 0.85), rgb(8 23 15 / 0.9));
+    box-shadow:
+      inset 0 0 0 1px rgb(232 239 233 / 0.08),
+      0 30px 60px -30px rgb(0 0 0 / 0.8);
+    backdrop-filter: blur(6px);
+  }
+
+  .stat-bar {
+    transform-origin: left;
+  }
+</style>
