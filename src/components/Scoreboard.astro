@@ -63,7 +63,7 @@ const phases = navLinks.map((link) => ({
     </button>
 
     <nav
-      class="absolute top-full right-0 mt-2 hidden rounded-xl border border-chalk/10 bg-pitch/95 p-3 text-muted sm:static sm:mt-0 sm:ml-auto sm:block sm:border-0 sm:bg-transparent sm:p-0"
+      class="phase-menu rounded-xl border border-chalk/10 bg-pitch/95 p-3 text-muted backdrop-blur-md sm:ml-auto sm:border-0 sm:bg-transparent sm:p-0 sm:backdrop-blur-none"
       id="main-menu"
     >
       <ul class="gap-1 sm:flex sm:items-center">
@@ -119,17 +119,17 @@ const phases = navLinks.map((link) => ({
   const menu = document.querySelector("#main-menu");
   const navItems = document.querySelectorAll<HTMLAnchorElement>("#main-menu .nav-item");
 
-  const toggleMenu = () => {
-    menu?.classList.toggle("hidden");
-    const isHidden = menu?.classList.contains("hidden");
-    button?.setAttribute("aria-expanded", `${!isHidden}`);
+  const setMenu = (open: boolean) => {
+    menu?.toggleAttribute("data-open", open);
+    button?.setAttribute("aria-expanded", `${open}`);
   };
 
-  button?.addEventListener("click", toggleMenu);
-  navItems.forEach((item) => {
-    item.addEventListener("click", () => {
-      if (window.matchMedia("(max-width: 639px)").matches) toggleMenu();
-    });
+  button?.addEventListener("click", () => setMenu(!menu?.hasAttribute("data-open")));
+  navItems.forEach((item) => item.addEventListener("click", () => setMenu(false)));
+  document.addEventListener("keydown", (e) => e.key === "Escape" && setMenu(false));
+  document.addEventListener("click", (e) => {
+    const target = e.target as Node;
+    if (!menu?.contains(target) && !button?.contains(target)) setMenu(false);
   });
 
   const updateActiveNav = (sectionId: string) => {
@@ -279,6 +279,34 @@ const phases = navLinks.map((link) => ({
 
   @media (prefers-reduced-motion: reduce) {
     [data-score-home]:global(.goal) { animation: none; }
+  }
+
+  @media (max-width: 639px) {
+    .phase-menu {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      left: 0;
+      margin-top: 0.5rem;
+      visibility: hidden;
+      opacity: 0;
+      transform: translateY(-8px);
+      transition:
+        opacity 220ms ease,
+        transform 220ms ease,
+        visibility 220ms;
+    }
+
+    .phase-menu[data-open] {
+      visibility: visible;
+      opacity: 1;
+      transform: none;
+    }
+
+    .phase-menu .nav-item {
+      padding: 0.75rem;
+      font-size: 1.125rem;
+    }
   }
 
   .nav-item.is-active {
