@@ -183,3 +183,15 @@ html.scroll-locked {
   background: var(--color-floodlight);
   color: var(--color-pitch);
 }
+
+/* Reduced-motion safety net: anything that slips past a component's own
+   guard ends instantly instead of moving. Audited with getAnimations(). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}
