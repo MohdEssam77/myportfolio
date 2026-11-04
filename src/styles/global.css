@@ -179,3 +179,19 @@ html.scroll-locked {
     scroll-behavior: auto !important;
   }
 }
+
+/* Dark native scrollbars for the page; overlays scroll without a visible bar. */
+html {
+  color-scheme: dark;
+  scrollbar-color: rgb(200 255 61 / 0.35) #08170f;
+}
+
+dialog,
+dialog * {
+  scrollbar-width: none;
+}
+
+dialog::-webkit-scrollbar,
+dialog *::-webkit-scrollbar {
+  display: none;
+}

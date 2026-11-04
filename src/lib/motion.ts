@@ -23,7 +23,14 @@ export const initSmoothScroll = () => {
   if (lenis || prefersReducedMotion() || window.matchMedia("(pointer: coarse)").matches) {
     return lenis;
   }
-  lenis = new Lenis({ anchors: { offset: -96 }, autoRaf: true });
+  lenis = new Lenis({
+    anchors: { offset: -96 },
+    autoRaf: true,
+    // Let overlays (VAR, game, project/match reports) and other inner scroll
+    // areas scroll natively, even while the page itself is locked.
+    prevent: (node) => node.tagName === "DIALOG",
+    allowNestedScroll: true,
+  });
   return lenis;
 };
 
