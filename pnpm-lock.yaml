@@ -14,9 +14,6 @@ importers:
       '@astrojs/vercel':
         specifier: ^8.2.11
         version: 8.2.11(astro@5.16.4(@types/node@24.10.1)(@vercel/functions@3.7.4)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.3)(typescript@5.9.3)(yaml@2.8.2))(rollup@4.53.3)
-      '@fontsource-variable/gabarito':
-        specifier: ^5.1.0
-        version: 5.2.8
       '@fontsource/be-vietnam-pro':
         specifier: ^5.1.0
         version: 5.2.8
@@ -318,9 +315,6 @@ packages:
     engines: {node: '>=18'}
     cpu: [x64]
     os: [win32]
-
-  '@fontsource-variable/gabarito@5.2.8':
-    resolution: {integrity: sha512-wIAwvNwzfoYMm4iisswaUYgCxDWFe6JdKDL1gjgUjYe7LU1u/zjGekEigJgkabvMgZbWyJjkRNCb2gJlcMxvpg==}
 
   '@fontsource/be-vietnam-pro@5.2.8':
     resolution: {integrity: sha512-lqTtfpkAy0GdFH0fqwR0sW4VP+3CNGaQV6SpW2TSZaNmixZMlou+2dp5ErGidrS1MPiDDPfPbfW2i358PVFLZA==}
@@ -2954,8 +2948,6 @@ snapshots:
 
   '@esbuild/win32-x64@0.25.12':
     optional: true
-
-  '@fontsource-variable/gabarito@5.2.8': {}
 
   '@fontsource/be-vietnam-pro@5.2.8': {}
 

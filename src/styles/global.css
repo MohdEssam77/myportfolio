@@ -2,8 +2,7 @@
 
 @theme {
   --font-sans: "Be Vietnam Pro", system-ui, sans-serif;
-  --font-serif: "Gabarito Variable", ui-serif, serif;
-  --font-display: "Big Shoulders Display", "Gabarito Variable", sans-serif;
+  --font-display: "Big Shoulders Display", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
 
   /* Matchday palette */
@@ -16,12 +15,6 @@
   --color-muted: #8aa597;
   --color-card-red: #ff3b3b;
   --color-card-yellow: #ffd60a;
-
-  /* Legacy aliases so existing classes keep working during migration */
-  --color-primary: var(--color-floodlight);
-  --color-neutral: var(--color-muted);
-  --color-white: var(--color-chalk);
-  --color-black: var(--color-pitch);
 
   --text-xs: 0.875rem;
   --text-xs--line-height: 1.125rem;
@@ -50,20 +43,8 @@
   --text-9xl: 6rem;
   --text-9xl--line-height: 6.625rem;
 
-  --tracking-tightest: -2px;
-  --tracking-tighter: -1px;
   --tracking-tight: -0.25px;
 
-  --animate-slide-in: slide-in 600ms ease both;
-
-  @keyframes slide-in {
-    10% {
-      transform: translateY(-100%);
-    }
-    100% {
-      transform: translateY(0);
-    }
-  }
 }
 
 /* Scroll reveal: only hide content when JS is running (html.js) */
