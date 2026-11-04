@@ -2,7 +2,8 @@
 import Section from "./Section.astro";
 import { Image } from "astro:assets";
 import type { ProjectProps } from "@types";
-import { formationSlots, squadNumber } from "@ui";
+import { SITE_CONTENT } from "@config";
+import { formationSlots, isHackathonProject, squadNumber } from "@ui";
 
 interface Props {
   projects: ProjectProps[];
@@ -16,6 +17,7 @@ const players = projects.map((project, i) => ({
   ...project,
   index: i,
   number: squadNumber(i),
+  podium: isHackathonProject(project, SITE_CONTENT.hackathons),
   shortName: project.name.replace(/\s*\(.*\)\s*$/, ""),
   left: 100 - slots[i].y,
   top: slots[i].x,
@@ -32,7 +34,9 @@ const formation = [...new Set(slots.map((s) => s.y))]
     <div class="squad-toolbar mb-6 flex items-center justify-between gap-4">
       <p class="font-mono text-xs whitespace-nowrap text-muted">
         <span class="text-floodlight">$</span> ls ./squad
-        <span class="hidden text-chalk/50 sm:inline">--count {projects.length}</span>
+        <span class="hidden text-chalk/50 sm:inline"
+          >--count {projects.length}</span
+        >
       </p>
       <div
         class="flex rounded-full border border-chalk/15 p-1 font-mono text-xs"
@@ -79,12 +83,12 @@ const formation = [...new Set(slots.map((s) => s.y))]
         </svg>
 
         <p
-          class="absolute top-5 left-6 font-mono text-[11px] tracking-[0.2em] text-muted uppercase"
+          class="absolute top-0 left-8 -translate-y-1/2 rounded bg-pitch px-2 py-1 font-mono text-[11px] tracking-[0.2em] text-muted uppercase"
         >
           Formation {formation} · {projects.length} players
         </p>
         <p
-          class="absolute top-5 right-6 font-mono text-[11px] tracking-[0.2em] text-muted uppercase"
+          class="absolute top-0 right-8 -translate-y-1/2 rounded bg-pitch px-2 py-1 font-mono text-[11px] tracking-[0.2em] text-muted uppercase"
         >
           Attack →
         </p>
@@ -100,10 +104,18 @@ const formation = [...new Set(slots.map((s) => s.y))]
                   type="button"
                   class="player group flex flex-col items-center gap-2"
                   data-project={p.index}
-                  aria-label={`${p.name}, number ${p.number}`}
+                  aria-label={`${p.name}, number ${p.number}${p.podium ? ", hackathon podium" : ""}`}
                 >
                   <span class="jersey relative grid size-16 place-items-center rounded-full border-2 border-chalk/80 bg-pitch font-display text-2xl font-black text-chalk transition-all duration-300 group-hover:-translate-y-1 group-hover:border-floodlight group-hover:bg-floodlight group-hover:text-pitch">
                     {p.number}
+                    {p.podium && (
+                      <span
+                        class="armband absolute -top-1 -right-3 rounded-sm bg-led px-1 font-mono text-[9px] leading-4 font-medium tracking-wider text-pitch"
+                        title="Hackathon podium"
+                      >
+                        POD
+                      </span>
+                    )}
                   </span>
                   <span class="rounded-md bg-pitch/85 px-2 py-1 font-display text-sm font-bold tracking-wide whitespace-nowrap text-chalk uppercase">
                     {p.shortName}
@@ -152,6 +164,11 @@ const formation = [...new Set(slots.map((s) => s.y))]
                   </span>
                 </div>
                 <div class="flex flex-1 flex-col p-5 pt-9">
+                  {p.podium && (
+                    <span class="mb-2 inline-block rounded-sm bg-led/15 px-2 py-0.5 font-mono text-[10px] tracking-wider text-led uppercase">
+                      Hackathon podium
+                    </span>
+                  )}
                   <h3 class="mb-2 font-display text-2xl leading-none font-black text-chalk uppercase">
                     {p.name}
                   </h3>
@@ -210,6 +227,11 @@ const formation = [...new Set(slots.map((s) => s.y))]
               </span>
             </div>
             <div class="flex flex-1 flex-col p-5">
+              {p.podium && (
+                <span class="mb-2 inline-block rounded-sm bg-led/15 px-2 py-0.5 font-mono text-[10px] tracking-wider text-led uppercase">
+                  Hackathon podium
+                </span>
+              )}
               <h3 class="mb-2 font-display text-2xl leading-none font-black text-chalk uppercase">
                 {p.name}
               </h3>
@@ -268,7 +290,7 @@ const formation = [...new Set(slots.map((s) => s.y))]
           </div>
           <div class="flex flex-col p-6 sm:p-8">
             <p class="mb-2 font-mono text-[11px] tracking-[0.25em] text-muted uppercase">
-              Scouting report · Project
+              Scouting report · {p.podium ? "Hackathon podium" : "Project"}
             </p>
             <h3 class="mb-4 font-display text-4xl leading-none font-black text-chalk uppercase">
               {p.name}
