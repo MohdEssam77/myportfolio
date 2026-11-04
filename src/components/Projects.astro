@@ -1,6 +1,6 @@
 ---
 import Section from "./Section.astro";
-import { Image } from "astro:assets";
+import Media from "./Media.astro";
 import type { ProjectProps } from "@types";
 import { SITE_CONTENT } from "@config";
 import { formationSlots, isHackathonProject, squadNumber } from "@ui";
@@ -154,7 +154,7 @@ const formation = [...new Set(slots.map((s) => s.y))]
             players.map((p) => (
               <li class="lineup-card relative flex w-[80%] shrink-0 snap-center flex-col overflow-hidden rounded-3xl border border-chalk/10 bg-turf/60">
                 <div class="relative">
-                  <Image
+                  <Media
                     class="aspect-[736/483] w-full object-cover object-left-top"
                     src={p.image}
                     alt={p.name}
@@ -217,7 +217,7 @@ const formation = [...new Set(slots.map((s) => s.y))]
         players.map((p) => (
           <li class="list-card group flex flex-col overflow-hidden rounded-2xl border border-chalk/10 bg-turf/40 transition-colors hover:border-floodlight/40">
             <div class="relative overflow-hidden bg-pitch">
-              <Image
+              <Media
                 class="aspect-[736/483] w-full object-cover object-left-top transition-transform duration-500 group-hover:scale-105"
                 src={p.image}
                 alt={p.name}
@@ -279,7 +279,7 @@ const formation = [...new Set(slots.map((s) => s.y))]
           hidden
         >
           <div class="relative bg-pitch">
-            <Image
+            <Media
               class="aspect-[736/483] size-full object-cover object-left-top"
               src={p.image}
               alt={p.name}

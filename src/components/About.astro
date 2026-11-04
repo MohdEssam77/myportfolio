@@ -1,6 +1,6 @@
 ---
 import Section from "./Section.astro";
-import { Image } from "astro:assets";
+import Media from "./Media.astro";
 import type { AboutProps, HeroProps } from "@types";
 import { PLAYER } from "@ui";
 
@@ -89,7 +89,7 @@ const wallTiles = Array.from(
         class="polaroid relative mx-auto w-64 flex-shrink-0 rotate-[5deg] bg-white p-4 pb-3 md:rotate-[7deg]"
         data-reveal
       >
-        <Image
+        <Media
           class="polaroid-photo aspect-square w-full object-cover object-[32%_40%]"
           src={image}
           width="260"

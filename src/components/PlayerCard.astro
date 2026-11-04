@@ -1,5 +1,5 @@
 ---
-import { Image } from "astro:assets";
+import Media from "./Media.astro";
 import { SITE_CONTENT } from "@config";
 import { PLAYER, deriveStats } from "@ui";
 
@@ -50,7 +50,7 @@ const statCells = [
         </header>
 
         <div class="relative z-10 mt-3 flex-1 overflow-hidden rounded-2xl border border-chalk/10">
-          <Image
+          <Media
             class="size-full origin-[32%_40%] scale-[2.1] object-cover"
             src={about.image}
             width="600"

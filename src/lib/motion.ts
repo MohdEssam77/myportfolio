@@ -83,3 +83,18 @@ export const lockScroll = (locked: boolean) => {
   if (locked) lenis?.stop();
   else lenis?.start();
 };
+
+// Looping clips (converted GIFs) play only while visible, and never under
+// reduced motion — then they just show their first frame.
+export const initAutoplayVideos = () => {
+  const videos = document.querySelectorAll<HTMLVideoElement>("video[data-autoplay]");
+  if (prefersReducedMotion() || !("IntersectionObserver" in window)) return;
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(({ target, isIntersecting }) => {
+      const video = target as HTMLVideoElement;
+      if (isIntersecting) void video.play().catch(() => {});
+      else video.pause();
+    });
+  });
+  videos.forEach((v) => observer.observe(v));
+};

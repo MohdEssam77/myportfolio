@@ -1,6 +1,6 @@
 ---
 import Section from "./Section.astro";
-import { Image } from "astro:assets";
+import Media from "./Media.astro";
 import type { HackathonProps } from "@types";
 import { trophyTier, type TrophyTier } from "@ui";
 import Trophy from "@icons/Trophy.astro";
@@ -165,7 +165,7 @@ ranked.forEach((t, i) => (i % 2 === 0 ? shelf.push(t) : shelf.unshift(t)));
               >
                 <div class="gallery-track flex" data-gallery-track>
                   {t.images.map((img, i) => (
-                    <Image
+                    <Media
                       class="aspect-[4/3] w-full shrink-0 object-contain select-none"
                       src={img}
                       alt={`${t.name} photo ${i + 1} of ${t.images.length}`}
@@ -206,7 +206,7 @@ ranked.forEach((t, i) => (i % 2 === 0 ? shelf.push(t) : shelf.unshift(t)));
                       aria-label={`Show photo ${i + 1}`}
                       aria-current={i === 0 ? "true" : undefined}
                     >
-                      <Image
+                      <Media
                         class="size-full object-cover"
                         src={img}
                         alt=""
