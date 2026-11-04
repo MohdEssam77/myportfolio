@@ -8,7 +8,9 @@
       "@layouts/*": ["./src/layouts/*"],
       "@icons/*": ["./src/icons/*"],
       "@types": ["./src/types/index.ts"],
-      "@config": ["./src/config/index.ts"]
+      "@config": ["./src/config/index.ts"],
+      "@ui": ["./src/config/ui.ts"],
+      "@lib/*": ["./src/lib/*"]
     }
   }
 }
