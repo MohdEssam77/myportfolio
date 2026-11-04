@@ -105,7 +105,7 @@ const statCells = [
         <ul class="mt-auto space-y-2 font-mono text-xs">
           <li>
             <a class="flex items-center justify-between rounded-lg border border-chalk/10 px-3 py-2.5 text-chalk hover:border-floodlight/60" href={`mailto:${hero.email}`}>
-              <span class="text-muted">email</span><span class="truncate pl-3">{hero.email}</span>
+              <span class="text-muted">email</span><span class="pl-3 text-right">{hero.email.split("@")[0]}@<wbr />{hero.email.split("@")[1]}</span>
             </a>
           </li>
           {
@@ -226,16 +226,32 @@ const statCells = [
     transform: rotateY(180deg);
   }
 
+  /* Safari ignores backface-visibility once a face contains blend modes (the
+     holo shine), so the hidden face is also switched off with visibility.
+     The swap is delayed to the moment the card is edge-on (~100ms into the
+     overshooting flip), so it is never seen. */
   .card-face {
+    -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
+    transition: visibility 0s linear 100ms;
   }
 
   .card-back {
     transform: rotateY(180deg);
+    visibility: hidden;
+  }
+
+  .is-flipped .card-front {
+    visibility: hidden;
+  }
+
+  .is-flipped .card-back {
+    visibility: visible;
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .card-inner { transition: none; }
+    .card-inner,
+    .card-face { transition: none; }
   }
 
   .card-holo,
