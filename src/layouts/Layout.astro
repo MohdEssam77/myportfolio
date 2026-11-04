@@ -8,6 +8,7 @@ import "@fontsource/jetbrains-mono/latin-400";
 import "@fontsource/jetbrains-mono/latin-500";
 import { SITE_CONFIG } from "@config";
 import Footer from "@components/Footer.astro";
+import Stadium from "@components/Stadium.astro";
 
 const {
   title,
@@ -47,7 +48,8 @@ const ogImgUrl = socialImage ? canonicalURL + socialImage : null;
     <meta property="twitter:description" content={description} />
     {ogImgUrl && <meta property="twitter:image" content={ogImgUrl} />}
   </head>
-  <body class="bg-black font-sans">
+  <body class="bg-pitch font-sans text-chalk">
+    <Stadium />
     <Header siteLogo={siteLogo} navLinks={navLinks} />
     <main class="mx-auto max-w-3xl px-5">
       <slot />
