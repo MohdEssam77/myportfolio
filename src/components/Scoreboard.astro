@@ -1,0 +1,172 @@
+---
+import Menu from "@icons/Menu.astro";
+import { Image } from "astro:assets";
+import type { HeaderProps } from "@types";
+import { PLAYER, SECTION_MINUTES } from "@ui";
+
+type Props = HeaderProps;
+
+const { siteLogo, navLinks } = Astro.props;
+
+const phases = navLinks.map((link) => ({
+  ...link,
+  minute: SECTION_MINUTES[link.href.replace("#", "")],
+}));
+---
+
+<header id="scoreboard" class="sticky top-0 z-50 px-3 pt-3 sm:px-6">
+  <div
+    class="scoreboard relative mx-auto flex max-w-6xl items-center gap-2 rounded-2xl border border-chalk/10 bg-pitch/80 py-2 pr-2 pl-2 shadow-[0_10px_40px_-10px_rgb(0_0_0/0.6)] backdrop-blur-md sm:gap-4 sm:pl-3"
+  >
+    <a href="/" aria-label="Home link" class="shrink-0">
+      <Image
+        class="rounded-full ring-2 ring-floodlight/60"
+        src={siteLogo}
+        width="38"
+        height="38"
+        alt="website logo"
+      />
+    </a>
+
+    <div class="flex items-center gap-2 font-display text-lg leading-none font-bold uppercase sm:text-xl">
+      <span class="tracking-wide text-chalk">
+        <span class="md:hidden">HAL</span><span class="hidden md:inline">Halboup</span>
+      </span>
+      <span class="led-box flex items-center gap-1 rounded-md px-2 py-1 text-led">
+        <span>0</span><span class="text-led/50">–</span><span>0</span>
+      </span>
+      <span class="tracking-wide text-muted">
+        <span class="lg:hidden">BOR</span><span class="hidden lg:inline">{PLAYER.rival}</span>
+      </span>
+    </div>
+
+    <button
+      type="button"
+      id="menu-button"
+      class="ml-auto rounded-lg px-2 py-1.5 text-muted sm:hidden"
+      aria-expanded="false"
+      aria-controls="main-menu"
+      aria-label="Open match phases menu"
+    >
+      <Menu />
+    </button>
+
+    <nav
+      class="absolute top-full right-0 mt-2 hidden rounded-xl border border-chalk/10 bg-pitch/95 p-3 text-muted sm:static sm:mt-0 sm:ml-auto sm:block sm:border-0 sm:bg-transparent sm:p-0"
+      id="main-menu"
+    >
+      <ul class="gap-1 sm:flex sm:items-center">
+        {
+          phases.map((link) => (
+            <li>
+              <a
+                class="nav-item group flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors hover:text-chalk"
+                href={link.href}
+              >
+                {link.minute !== undefined && (
+                  <span class="font-mono text-[11px] text-muted/70 group-[.is-active]:text-floodlight">
+                    {link.minute}'
+                  </span>
+                )}
+                {link.text}
+              </a>
+            </li>
+          ))
+        }
+        <li class="mt-2 sm:mt-0 sm:ml-1">
+          <a
+            class="inline-flex items-center gap-2 rounded-lg bg-floodlight px-3.5 py-2 text-sm font-semibold text-pitch transition-transform hover:-translate-y-0.5"
+            href="/Halboup_Mohammed.pdf"
+            download="Mohammed_Halboup_Resume.pdf"
+          >
+            Resume
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<script>
+  // Toggle mobile menu
+  const button = document.querySelector("#menu-button");
+  const menu = document.querySelector("#main-menu");
+  const navItems = document.querySelectorAll<HTMLAnchorElement>("#main-menu .nav-item");
+
+  const toggleMenu = () => {
+    menu?.classList.toggle("hidden");
+    const isHidden = menu?.classList.contains("hidden");
+    button?.setAttribute("aria-expanded", `${!isHidden}`);
+  };
+
+  button?.addEventListener("click", toggleMenu);
+  navItems.forEach((item) => {
+    item.addEventListener("click", () => {
+      if (window.matchMedia("(max-width: 639px)").matches) toggleMenu();
+    });
+  });
+
+  const updateActiveNav = (sectionId: string) => {
+    navItems.forEach((item) => {
+      const active = item.getAttribute("href") === `#${sectionId}`;
+      item.classList.toggle("is-active", active);
+      item.classList.toggle("text-chalk", active);
+      if (active) item.setAttribute("aria-current", "true");
+      else item.removeAttribute("aria-current");
+    });
+  };
+
+  // Active section = last section whose top is at or above a line near the top of the viewport.
+  // This works reliably with sticky layouts where intersection ratio is misleading.
+  const getActiveSection = () => {
+    const sections = document.querySelectorAll("main section[id]");
+    const triggerOffset = 140; // px from top of viewport
+    let activeSection = "";
+
+    for (const section of sections) {
+      if (section.getBoundingClientRect().top <= triggerOffset) {
+        activeSection = section.id;
+      }
+    }
+    return activeSection || sections[0]?.id || "";
+  };
+
+  const updateNavFromScroll = () => {
+    const activeSection = getActiveSection();
+    if (activeSection) updateActiveNav(activeSection);
+  };
+
+  updateNavFromScroll();
+  window.addEventListener("scroll", updateNavFromScroll, { passive: true });
+  window.addEventListener("resize", updateNavFromScroll);
+</script>
+
+<style>
+  .led-box {
+    background:
+      radial-gradient(circle, rgb(0 0 0 / 0.55) 1px, transparent 1.4px) 0 0 / 3px 3px,
+      #050c09;
+    box-shadow: inset 0 0 0 1px rgb(255 176 32 / 0.15);
+    text-shadow: 0 0 8px rgb(255 176 32 / 0.65);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .nav-item.is-active {
+    background: rgb(200 255 61 / 0.08);
+  }
+</style>
