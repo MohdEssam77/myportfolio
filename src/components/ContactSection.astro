@@ -1,122 +1,185 @@
 ---
 import Section from "./Section.astro";
+import { SITE_CONTENT } from "@config";
+import { PLAYER } from "@ui";
+
+const fields: {
+  id: string;
+  label: string;
+  type: "text" | "email" | "tel";
+  placeholder: string;
+  required: boolean;
+}[] = [
+  {
+    id: "firstName",
+    label: "First Name",
+    type: "text",
+    placeholder: "Abdoh",
+    required: true,
+  },
+  {
+    id: "lastName",
+    label: "Last Name",
+    type: "text",
+    placeholder: "Rabal",
+    required: true,
+  },
+  {
+    id: "email",
+    label: "Email",
+    type: "email",
+    placeholder: "abdohrabal1@example.com",
+    required: true,
+  },
+  {
+    id: "phone",
+    label: "Phone Number",
+    type: "tel",
+    placeholder: "+49 176 74522561",
+    required: false,
+  },
+];
 ---
 
 <Section text="Contact" href="contact">
-  <form id="contact-form" action="/api/contact" method="POST" class="mx-auto max-w-2xl">
-    <div class="grid gap-6 sm:grid-cols-2">
-      <div class="flex flex-col gap-2">
-        <label for="firstName" class="text-sm font-medium text-neutral">
-          First Name <span class="text-primary">*</span>
-        </label>
-        <input
-          type="text"
-          id="firstName"
-          name="firstName"
-          required
-          placeholder="Abdoh"
-          class="rounded-lg border border-neutral/20 bg-black/50 px-4 py-3 text-white placeholder-neutral/50 outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary"
-        />
-      </div>
-
-      <div class="flex flex-col gap-2">
-        <label for="lastName" class="text-sm font-medium text-neutral">
-          Last Name <span class="text-primary">*</span>
-        </label>
-        <input
-          type="text"
-          id="lastName"
-          name="lastName"
-          required
-          placeholder="Rabal"
-          class="rounded-lg border border-neutral/20 bg-black/50 px-4 py-3 text-white placeholder-neutral/50 outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary"
-        />
-      </div>
-
-      <div class="flex flex-col gap-2">
-        <label for="email" class="text-sm font-medium text-neutral">
-          Email <span class="text-primary">*</span>
-        </label>
-        <input
-          type="email"
-          id="email"
-          name="email"
-          required
-          placeholder="abdohrabal1@example.com"
-          class="rounded-lg border border-neutral/20 bg-black/50 px-4 py-3 text-white placeholder-neutral/50 outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary"
-        />
-      </div>
-
-      <div class="flex flex-col gap-2">
-        <label for="phone" class="text-sm font-medium text-neutral">
-          Phone Number
-        </label>
-        <input
-          type="tel"
-          id="phone"
-          name="phone"
-          placeholder="+49 176 74522561"
-          class="rounded-lg border border-neutral/20 bg-black/50 px-4 py-3 text-white placeholder-neutral/50 outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary"
-        />
-      </div>
-    </div>
-
-    <div class="mt-6 flex flex-col gap-2">
-      <label for="message" class="text-sm font-medium text-neutral">
-        Message <span class="text-primary">*</span>
-      </label>
-      <textarea
-        id="message"
-        name="message"
-        required
-        rows="5"
-        placeholder="Your message here..."
-        class="resize-none rounded-lg border border-neutral/20 bg-black/50 px-4 py-3 text-white placeholder-neutral/50 outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary"
-      ></textarea>
-    </div>
-
-    <div class="mt-8">
-      <button
-        type="submit"
-        class="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-8 py-4 text-sm font-medium text-white transition-all hover:bg-primary/90 active:scale-95"
+  <form
+    id="contact-form"
+    action="/api/contact"
+    method="POST"
+    class="contract relative mx-auto max-w-2xl rounded-3xl"
+  >
+    <header
+      class="flex flex-wrap items-center justify-between gap-3 border-b border-dashed border-chalk/15 px-6 py-4 font-mono text-[11px] tracking-[0.2em] text-muted uppercase sm:px-8"
+    >
+      <span>Transfer offer · Form TR-{PLAYER.number}</span>
+      <span class="text-chalk/80"
+        >Player: {SITE_CONTENT.hero.name} #{PLAYER.number}</span
       >
-        Send Message
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <line x1="22" y1="2" x2="11" y2="13"></line>
-          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-        </svg>
-      </button>
-    </div>
+    </header>
 
-    <div id="form-result" class="mt-4 hidden text-sm"></div>
+    <div class="px-6 py-8 sm:px-8">
+      <div class="grid gap-x-6 gap-y-7 sm:grid-cols-2">
+        {
+          fields.map((field, i) => (
+            <div class="field flex flex-col gap-2">
+              <label
+                for={field.id}
+                class="font-mono text-[11px] tracking-[0.2em] text-muted uppercase"
+              >
+                <span class="text-chalk/40">§{i + 1}</span> {field.label}{" "}
+                {field.required && <span class="text-floodlight">*</span>}
+              </label>
+              <input
+                type={field.type}
+                id={field.id}
+                name={field.id}
+                required={field.required}
+                placeholder={field.placeholder}
+                class="contract-input"
+              />
+            </div>
+          ))
+        }
+      </div>
+
+      <div class="field mt-7 flex flex-col gap-2">
+        <label
+          for="message"
+          class="font-mono text-[11px] tracking-[0.2em] text-muted uppercase"
+        >
+          <span class="text-chalk/40">§{fields.length + 1}</span> Message <span
+            class="text-floodlight">*</span
+          >
+        </label>
+        <textarea
+          id="message"
+          name="message"
+          required
+          rows="5"
+          placeholder="Your message here..."
+          class="contract-input resize-none"></textarea>
+      </div>
+
+      <div class="mt-10 flex flex-wrap items-end justify-between gap-6">
+        <div class="font-mono text-[11px] text-muted">
+          <p
+            class="signature mb-1 w-48 border-b border-chalk/30 pb-1 font-display text-2xl text-chalk/80 italic"
+          >
+            &nbsp;
+          </p>
+          Signed digitally on submit
+        </div>
+        <button type="submit" class="btn-kick btn-primary" data-submit>
+          <span data-submit-label>Send Offer</span>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
+      </div>
+
+      <div id="form-result" class="mt-4 hidden text-sm"></div>
+    </div>
   </form>
 </Section>
 
 <style>
+  .contract {
+    background:
+      repeating-linear-gradient(
+        0deg,
+        transparent 0 31px,
+        rgb(232 239 233 / 0.025) 31px 32px
+      ),
+      linear-gradient(180deg, #10291f, #0a1b14);
+    box-shadow:
+      inset 0 0 0 1px rgb(232 239 233 / 0.1),
+      0 40px 80px -40px rgb(0 0 0 / 0.8);
+  }
+
+  .contract-input {
+    border: 0;
+    border-bottom: 1.5px dashed rgb(232 239 233 / 0.25);
+    background: transparent;
+    padding: 0.5rem 0;
+    color: var(--color-chalk);
+    outline: none;
+    transition: border-color 200ms;
+  }
+
+  .contract-input::placeholder {
+    color: rgb(138 165 151 / 0.45);
+  }
+
+  .contract-input:focus {
+    border-bottom-style: solid;
+    border-bottom-color: var(--color-floodlight);
+  }
+
   input:-webkit-autofill,
   input:-webkit-autofill:hover,
   input:-webkit-autofill:focus,
   textarea:-webkit-autofill,
   textarea:-webkit-autofill:hover,
   textarea:-webkit-autofill:focus {
-    -webkit-text-fill-color: white !important;
-    background-color: rgba(0, 0, 0, 0.5) !important;
+    -webkit-text-fill-color: var(--color-chalk) !important;
+    background-color: transparent !important;
     transition: background-color 5000s ease-in-out 0s;
   }
 
   input:-webkit-autofill::first-line,
   textarea:-webkit-autofill::first-line {
-    color: white !important;
+    color: var(--color-chalk) !important;
   }
 </style>
 
@@ -138,12 +201,14 @@ import Section from "./Section.astro";
 
       if (data.success) {
         result.className = "mt-4 text-sm text-green-400";
-        result.textContent = "Thank you! Your message has been sent successfully.";
+        result.textContent =
+          "Thank you! Your message has been sent successfully.";
         result.classList.remove("hidden");
         form.reset();
       } else {
         result.className = "mt-4 text-sm text-red-400";
-        result.textContent = data.message || "Something went wrong. Please try again.";
+        result.textContent =
+          data.message || "Something went wrong. Please try again.";
         result.classList.remove("hidden");
       }
     } catch {
