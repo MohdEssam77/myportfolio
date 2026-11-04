@@ -1,40 +1,73 @@
 ---
 import type { HeroProps } from "@types";
+import { PLAYER } from "@ui";
 type Props = HeroProps;
 
-const { name, specialty, summary, email, phone } = Astro.props;
+const { name, specialty, summary, phone } = Astro.props;
+const [firstName, ...rest] = name.split(" ");
+const lastName = rest.join(" ");
 ---
 
-<section class="mx-auto max-w-3xl py-24 md:py-32" id="hero">
-  <h1
-    class="mb-1.5 font-serif text-7xl font-bold tracking-tightest text-white sm:text-8xl md:mb-0 md:text-9xl"
-  >
-    {name}
-  </h1>
-  <p
-    class="mb-9 font-serif text-4xl leading-[46px] font-bold tracking-tighter text-primary sm:text-5xl md:text-6xl"
-  >
-    {specialty}
-  </p>
-  <p class="mb-16 text-base font-normal text-neutral md:text-lg">
-    {summary}
-  </p>
+<section
+  class="hero relative grid min-h-[calc(100dvh-80px)] items-center gap-14 py-16 lg:grid-cols-[1.25fr_1fr] lg:gap-10"
+  id="hero"
+>
+  <div class="relative z-10">
+    <p class="mb-6 flex items-center gap-3 font-mono text-xs tracking-[0.25em] text-muted uppercase">
+      <span class="inline-flex items-center gap-2 rounded bg-card-red/15 px-2 py-1 text-card-red">
+        <span class="size-1.5 rounded-full bg-card-red"></span>Live
+      </span>
+      Kick-off · #{PLAYER.number}
+    </p>
 
-  <div class="flex flex-wrap gap-4">
-    {phone && (
-      <a
-        class="inline-block rounded-full bg-primary px-8 py-5 text-sm leading-5 font-medium text-[#fff]"
-        href={`tel:${phone}`}>Call Me</a
+    <h1
+      class="hero-name mb-5 font-display leading-[0.82] font-black tracking-tight text-chalk uppercase"
+      aria-label={name}
+    >
+      <span class="slam block text-[clamp(4.5rem,15vw,10.5rem)]">{firstName}</span>
+      <span
+        class="slam slam-late outline-text block text-[clamp(4.5rem,15vw,10.5rem)] text-transparent"
+        >{lastName}</span
       >
-    )}
-    <a
-      class="inline-block rounded-full bg-primary px-8 py-5 text-sm leading-5 font-medium text-[#fff]"
-      href="#contact">Contact Me</a
-    >
-    <a
-      class="inline-block rounded-full bg-primary px-8 py-5 text-sm leading-5 font-medium text-[#fff]"
-      href="/Halboup_Mohammed.pdf"
-      download="Mohammed_Halboup_Resume.pdf">Download Resume</a
-    >
+    </h1>
+
+    <p class="mb-6 font-display text-4xl font-bold tracking-wide text-floodlight uppercase sm:text-5xl">
+      {specialty}
+    </p>
+    <p class="mb-10 max-w-xl text-base text-muted md:text-lg">
+      {summary}
+    </p>
+
+    <div class="flex flex-wrap gap-3">
+      {
+        phone && (
+          <a
+            class="inline-block rounded-full bg-floodlight px-7 py-4 text-sm leading-5 font-semibold text-pitch"
+            href={`tel:${phone}`}
+          >
+            Call Me
+          </a>
+        )
+      }
+      <a
+        class="inline-block rounded-full bg-floodlight px-7 py-4 text-sm leading-5 font-semibold text-pitch"
+        href="#contact">Contact Me</a
+      >
+      <a
+        class="inline-block rounded-full bg-floodlight px-7 py-4 text-sm leading-5 font-semibold text-pitch"
+        href="/Halboup_Mohammed.pdf"
+        download="Mohammed_Halboup_Resume.pdf">Download Resume</a
+      >
+    </div>
+  </div>
+
+  <div class="relative flex justify-center lg:justify-end" data-card-slot>
+    <slot name="card" />
   </div>
 </section>
+
+<style>
+  .outline-text {
+    -webkit-text-stroke: 2px var(--color-chalk);
+  }
+</style>
