@@ -1,6 +1,7 @@
 ---
 import type { HeroProps } from "@types";
 import { PLAYER } from "@ui";
+import Ball from "@icons/Ball.astro";
 type Props = HeroProps;
 
 const { name, specialty, summary, phone } = Astro.props;
@@ -63,6 +64,16 @@ const lastName = rest.join(" ");
   <div class="relative flex justify-center lg:justify-end" data-card-slot>
     <slot name="card" />
   </div>
+
+  <a
+    href="#experience"
+    class="scroll-cue absolute bottom-2 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-2 font-mono text-[11px] tracking-[0.25em] text-muted uppercase transition-colors hover:text-chalk lg:flex"
+  >
+    <span class="ball-track relative block h-6 w-24">
+      <Ball class="ball absolute top-0 left-0" size={22} />
+    </span>
+    Scroll to kick off
+  </a>
 </section>
 
 <script>
@@ -102,6 +113,19 @@ const lastName = rest.join(" ");
       transform: none;
       filter: none;
     }
+  }
+
+  .ball {
+    animation: roll 2.8s ease-in-out infinite;
+  }
+
+  @keyframes roll {
+    0%, 100% { transform: translateX(0) rotate(0deg); }
+    50% { transform: translateX(74px) rotate(385deg); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .scroll-cue { display: none; }
   }
 
   @keyframes impact {
