@@ -27,7 +27,7 @@ const {
 
 const canonicalURL = SITE_CONFIG.canonicalURL || (Astro.site ? new URL(Astro.url.pathname, Astro.site).href : Astro.url.pathname);
 
-const ogImgUrl = socialImage ? canonicalURL + socialImage : null;
+const ogImgUrl = socialImage ? new URL(socialImage, canonicalURL).href : null;
 ---
 
 <!doctype html>
