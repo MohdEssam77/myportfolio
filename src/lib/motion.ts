@@ -76,3 +76,10 @@ export const initMagnetic = () => {
     });
   });
 };
+
+// Freeze page scrolling while an overlay (dialog, terminal, game) is open.
+export const lockScroll = (locked: boolean) => {
+  document.documentElement.classList.toggle("scroll-locked", locked);
+  if (locked) lenis?.stop();
+  else lenis?.start();
+};
