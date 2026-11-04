@@ -10,29 +10,42 @@ interface Props {
   class?: string;
   loading?: "eager" | "lazy";
   draggable?: "true" | "false";
+  /** Show a still frame instead of playing (e.g. thumbnails). */
+  still?: boolean;
 }
 
-const { src, alt, width, height, class: className, loading = "lazy", draggable } = Astro.props;
+const {
+  src,
+  alt,
+  width,
+  height,
+  class: className,
+  loading = "lazy",
+  draggable,
+  still = false,
+} = Astro.props;
 const video = videoFor(src);
 const image = resolveImage(src);
 ---
 
 {
-  video ? (
+  video && still ? (
+    <img class={className} src={video.poster} alt={alt} width={width} height={height} loading={loading} />
+  ) : video ? (
     <video
       class={className}
       width={width}
       height={height}
+      poster={video.poster}
       muted
       loop
       playsinline
-      preload="metadata"
+      preload="none"
       aria-label={alt}
       data-autoplay
     >
       <source src={video.webm} type="video/webm" />
       <source src={video.mp4} type="video/mp4" />
-      <img src={src} alt={alt} width={width} height={height} />
     </video>
   ) : typeof image === "string" ? (
     <Image

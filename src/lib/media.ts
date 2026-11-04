@@ -21,6 +21,10 @@ const VIDEOS = new Set(["metalPulse", "dream_transport", "swisshacks3"]);
 export const videoFor = (src: string) => {
   const match = src.match(/\/([^/]+)\.gif$/i);
   return match && VIDEOS.has(match[1])
-    ? { webm: `/media/${match[1]}.webm`, mp4: `/media/${match[1]}.mp4` }
+    ? {
+        webm: `/media/${match[1]}.webm`,
+        mp4: `/media/${match[1]}.mp4`,
+        poster: `/media/${match[1]}.webp`,
+      }
     : null;
 };
