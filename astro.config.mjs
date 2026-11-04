@@ -5,6 +5,7 @@ import vercel from "@astrojs/vercel";
 
 // https://astro.build/config
 export default defineConfig({
+  site: "https://myportfolio-beta-cyan.vercel.app",
   // Site stays static; only routes that set `export const prerender = false`
   // (e.g. the contact API) run as Vercel serverless functions.
   adapter: vercel(),

@@ -1,0 +1,71 @@
+---
+import { Image } from "astro:assets";
+import { resolveImage, videoFor } from "@lib/media";
+
+interface Props {
+  src: string;
+  alt: string;
+  width: number | string;
+  height: number | string;
+  class?: string;
+  loading?: "eager" | "lazy";
+  draggable?: "true" | "false";
+  /** Show a still frame instead of playing (e.g. thumbnails). */
+  still?: boolean;
+}
+
+const {
+  src,
+  alt,
+  width,
+  height,
+  class: className,
+  loading = "lazy",
+  draggable,
+  still = false,
+} = Astro.props;
+const video = videoFor(src);
+const image = resolveImage(src);
+---
+
+{
+  video && still ? (
+    <img class={className} src={video.poster} alt={alt} width={width} height={height} loading={loading} />
+  ) : video ? (
+    <video
+      class={className}
+      width={width}
+      height={height}
+      poster={video.poster}
+      muted
+      loop
+      playsinline
+      preload="none"
+      aria-label={alt}
+      data-autoplay
+    >
+      <source src={video.webm} type="video/webm" />
+      <source src={video.mp4} type="video/mp4" />
+    </video>
+  ) : typeof image === "string" ? (
+    <Image
+      class={className}
+      src={image}
+      alt={alt}
+      width={Number(width)}
+      height={Number(height)}
+      loading={loading}
+      draggable={draggable}
+    />
+  ) : (
+    <Image
+      class={className}
+      src={image}
+      alt={alt}
+      width={Number(width)}
+      height={Number(height)}
+      loading={loading}
+      draggable={draggable}
+    />
+  )
+}

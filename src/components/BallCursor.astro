@@ -1,0 +1,62 @@
+---
+import Ball from "@icons/Ball.astro";
+---
+
+<div class="ball-cursor pointer-events-none fixed top-0 left-0 z-[80] opacity-0" aria-hidden="true">
+  <Ball size={18} />
+</div>
+
+<script>
+  import { prefersReducedMotion } from "@lib/motion";
+
+  // A small ball that trails the real cursor and spins with its speed.
+  // Desktop only; it never replaces the native cursor.
+  const ball = document.querySelector<HTMLElement>(".ball-cursor");
+
+  if (ball && window.matchMedia("(pointer: fine)").matches && !prefersReducedMotion()) {
+    let x = 0;
+    let y = 0;
+    let targetX = 0;
+    let targetY = 0;
+    let spin = 0;
+    let visible = false;
+
+    window.addEventListener(
+      "pointermove",
+      (e) => {
+        targetX = e.clientX + 16;
+        targetY = e.clientY + 16;
+        const overField = (e.target as HTMLElement).closest("input, textarea, dialog[open]");
+        if (!visible && !overField) {
+          x = targetX;
+          y = targetY;
+        }
+        visible = !overField;
+        ball.style.opacity = visible ? "1" : "0";
+      },
+      { passive: true },
+    );
+
+    document.documentElement.addEventListener("pointerleave", () => {
+      visible = false;
+      ball.style.opacity = "0";
+    });
+
+    const frame = () => {
+      const dx = (targetX - x) * 0.2;
+      x += dx;
+      y += (targetY - y) * 0.2;
+      spin += dx * 6;
+      ball.style.transform = `translate3d(${x}px, ${y}px, 0) rotate(${spin}deg)`;
+      requestAnimationFrame(frame);
+    };
+    requestAnimationFrame(frame);
+  }
+</script>
+
+<style>
+  .ball-cursor {
+    transition: opacity 200ms;
+    filter: drop-shadow(0 3px 4px rgb(0 0 0 / 0.5));
+  }
+</style>

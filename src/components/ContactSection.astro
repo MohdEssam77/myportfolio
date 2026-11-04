@@ -1,132 +1,376 @@
 ---
 import Section from "./Section.astro";
+import { SITE_CONTENT } from "@config";
+import { PLAYER } from "@ui";
+
+const fields: {
+  id: string;
+  label: string;
+  type: "text" | "email" | "tel";
+  placeholder: string;
+  required: boolean;
+}[] = [
+  {
+    id: "firstName",
+    label: "First Name",
+    type: "text",
+    placeholder: "Abdoh",
+    required: true,
+  },
+  {
+    id: "lastName",
+    label: "Last Name",
+    type: "text",
+    placeholder: "Rabal",
+    required: true,
+  },
+  {
+    id: "email",
+    label: "Email",
+    type: "email",
+    placeholder: "abdohrabal1@example.com",
+    required: true,
+  },
+  {
+    id: "phone",
+    label: "Phone Number",
+    type: "tel",
+    placeholder: "+49 176 74522561",
+    required: false,
+  },
+];
 ---
 
 <Section text="Contact" href="contact">
-  <form action="/api/contact" method="POST" class="mx-auto max-w-2xl">
-    <div class="grid gap-6 sm:grid-cols-2">
-      <div class="flex flex-col gap-2">
-        <label for="firstName" class="text-sm font-medium text-neutral">
-          First Name <span class="text-primary">*</span>
-        </label>
-        <input
-          type="text"
-          id="firstName"
-          name="firstName"
-          required
-          placeholder="Abdoh"
-          class="rounded-lg border border-neutral/20 bg-black/50 px-4 py-3 text-white placeholder-neutral/50 outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary"
-        />
-      </div>
-
-      <div class="flex flex-col gap-2">
-        <label for="lastName" class="text-sm font-medium text-neutral">
-          Last Name <span class="text-primary">*</span>
-        </label>
-        <input
-          type="text"
-          id="lastName"
-          name="lastName"
-          required
-          placeholder="Rabal"
-          class="rounded-lg border border-neutral/20 bg-black/50 px-4 py-3 text-white placeholder-neutral/50 outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary"
-        />
-      </div>
-
-      <div class="flex flex-col gap-2">
-        <label for="email" class="text-sm font-medium text-neutral">
-          Email <span class="text-primary">*</span>
-        </label>
-        <input
-          type="email"
-          id="email"
-          name="email"
-          required
-          placeholder="abdohrabal1@example.com"
-          class="rounded-lg border border-neutral/20 bg-black/50 px-4 py-3 text-white placeholder-neutral/50 outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary"
-        />
-      </div>
-
-      <div class="flex flex-col gap-2">
-        <label for="phone" class="text-sm font-medium text-neutral">
-          Phone Number
-        </label>
-        <input
-          type="tel"
-          id="phone"
-          name="phone"
-          placeholder="+49 176 74522561"
-          class="rounded-lg border border-neutral/20 bg-black/50 px-4 py-3 text-white placeholder-neutral/50 outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary"
-        />
-      </div>
-    </div>
-
-    <div class="mt-6 flex flex-col gap-2">
-      <label for="message" class="text-sm font-medium text-neutral">
-        Message <span class="text-primary">*</span>
-      </label>
-      <textarea
-        id="message"
-        name="message"
-        required
-        rows="5"
-        placeholder="Your message here..."
-        class="resize-none rounded-lg border border-neutral/20 bg-black/50 px-4 py-3 text-white placeholder-neutral/50 outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary"
-      ></textarea>
-    </div>
-
-    <div class="mt-8">
-      <button
-        type="submit"
-        class="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-8 py-4 text-sm font-medium text-white transition-all hover:bg-primary/90 active:scale-95"
+  <form
+    id="contact-form"
+    action="/api/contact"
+    method="POST"
+    class="contract relative rounded-3xl"
+  >
+    <header
+      class="flex flex-wrap items-center justify-between gap-3 border-b border-dashed border-chalk/15 px-6 py-4 font-mono text-[11px] tracking-[0.2em] text-muted uppercase sm:px-8"
+    >
+      <span>Transfer offer · Form TR-{PLAYER.number}</span>
+      <span class="text-chalk/80"
+        >Player: {SITE_CONTENT.hero.name} #{PLAYER.number}</span
       >
-        Send Message
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <line x1="22" y1="2" x2="11" y2="13"></line>
-          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-        </svg>
-      </button>
-    </div>
+    </header>
 
-    <div id="form-result" class="mt-4 hidden text-sm"></div>
+    <div class="px-6 py-8 sm:px-8">
+      <div class="grid gap-x-6 gap-y-7 sm:grid-cols-2">
+        {
+          fields.map((field, i) => (
+            <div class="field flex flex-col gap-2">
+              <label
+                for={field.id}
+                class="font-mono text-[11px] tracking-[0.2em] text-muted uppercase"
+              >
+                <span class="text-chalk/40">§{i + 1}</span> {field.label}{" "}
+                {field.required && <span class="text-floodlight">*</span>}
+              </label>
+              <input
+                type={field.type}
+                id={field.id}
+                name={field.id}
+                required={field.required}
+                placeholder={field.placeholder}
+                class="contract-input"
+              />
+            </div>
+          ))
+        }
+      </div>
+
+      <div class="field mt-7 flex flex-col gap-2">
+        <label
+          for="message"
+          class="font-mono text-[11px] tracking-[0.2em] text-muted uppercase"
+        >
+          <span class="text-chalk/40">§{fields.length + 1}</span> Message <span
+            class="text-floodlight">*</span
+          >
+        </label>
+        <textarea
+          id="message"
+          name="message"
+          required
+          rows="5"
+          placeholder="Your message here..."
+          class="contract-input resize-none"></textarea>
+      </div>
+
+      <div class="mt-10 flex flex-wrap items-end justify-between gap-6">
+        <div class="font-mono text-[11px] text-muted">
+          <p
+            class="signature mb-1 w-48 border-b border-chalk/30 pb-1 font-display text-2xl text-chalk/80 italic"
+          >
+            &nbsp;
+          </p>
+          Signed digitally on submit
+        </div>
+        <button type="submit" class="btn-kick btn-primary" data-submit>
+          <span data-submit-label>Send Offer</span>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
+      </div>
+
+      <div
+        id="form-result"
+        class="mt-4 hidden text-sm"
+        role="status"
+        aria-live="polite"
+      >
+      </div>
+    </div>
   </form>
 </Section>
 
 <style>
+  .contract {
+    background:
+      repeating-linear-gradient(
+        0deg,
+        transparent 0 31px,
+        rgb(232 239 233 / 0.025) 31px 32px
+      ),
+      linear-gradient(180deg, #10291f, #0a1b14);
+    box-shadow:
+      inset 0 0 0 1px rgb(232 239 233 / 0.1),
+      0 40px 80px -40px rgb(0 0 0 / 0.8);
+  }
+
+  [data-submit].is-pending {
+    cursor: progress;
+    opacity: 0.85;
+  }
+
+  [data-submit].is-pending svg {
+    animation: whistle 500ms ease-in-out infinite alternate;
+  }
+
+  @keyframes whistle {
+    from {
+      transform: translateX(-2px) rotate(-12deg);
+    }
+    to {
+      transform: translateX(2px) rotate(12deg);
+    }
+  }
+
+  .contract::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    background:
+      repeating-linear-gradient(
+        45deg,
+        rgb(232 239 233 / 0.18) 0 1px,
+        transparent 1px 18px
+      ),
+      repeating-linear-gradient(
+        -45deg,
+        rgb(232 239 233 / 0.18) 0 1px,
+        transparent 1px 18px
+      );
+  }
+
+  .contract.goal {
+    animation: net-bulge 700ms cubic-bezier(0.3, 1.6, 0.5, 1);
+  }
+
+  .contract.goal::after {
+    animation: net-show 1.2s ease-out;
+  }
+
+  @keyframes net-bulge {
+    35% {
+      transform: scale(1.025) translateY(-6px);
+    }
+  }
+
+  @keyframes net-show {
+    15% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+
+  :global(.result) {
+    color: var(--color-chalk);
+  }
+
+  :global(.result .ref-card) {
+    width: 0.9rem;
+    height: 1.25rem;
+    flex-shrink: 0;
+    border-radius: 2px;
+    box-shadow: 0 4px 10px rgb(0 0 0 / 0.4);
+    animation: show-card 450ms cubic-bezier(0.3, 1.6, 0.5, 1);
+  }
+
+  :global(.result[data-outcome="goal"]) {
+    color: var(--color-floodlight);
+  }
+  :global(.result[data-outcome="goal"] .ref-card) {
+    border-radius: 9999px;
+    width: 1rem;
+    height: 1rem;
+    background: var(--color-floodlight);
+  }
+  :global(.result[data-outcome="yellow"] .ref-card) {
+    background: var(--color-card-yellow);
+  }
+  :global(.result[data-outcome="red"]) {
+    color: #ff8a8a;
+  }
+  :global(.result[data-outcome="red"] .ref-card) {
+    background: var(--color-card-red);
+  }
+
+  @keyframes show-card {
+    from {
+      transform: translateY(10px) rotate(-25deg) scale(0.6);
+      opacity: 0;
+    }
+    to {
+      transform: rotate(-8deg);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global(.result .ref-card) {
+      animation: none;
+    }
+  }
+
+  .contract-input:user-invalid {
+    border-bottom-color: var(--color-card-yellow);
+  }
+
+  .contract-input {
+    border: 0;
+    border-bottom: 1.5px dashed rgb(232 239 233 / 0.25);
+    background: transparent;
+    padding: 0.5rem 0;
+    color: var(--color-chalk);
+    outline: none;
+    transition: border-color 200ms;
+  }
+
+  .contract-input::placeholder {
+    color: rgb(138 165 151 / 0.45);
+  }
+
+  .contract-input:focus {
+    border-bottom-style: solid;
+    border-bottom-color: var(--color-floodlight);
+  }
+
   input:-webkit-autofill,
   input:-webkit-autofill:hover,
   input:-webkit-autofill:focus,
   textarea:-webkit-autofill,
   textarea:-webkit-autofill:hover,
   textarea:-webkit-autofill:focus {
-    -webkit-text-fill-color: white !important;
-    background-color: rgba(0, 0, 0, 0.5) !important;
+    -webkit-text-fill-color: var(--color-chalk) !important;
+    background-color: transparent !important;
     transition: background-color 5000s ease-in-out 0s;
   }
 
   input:-webkit-autofill::first-line,
   textarea:-webkit-autofill::first-line {
-    color: white !important;
+    color: var(--color-chalk) !important;
   }
 </style>
 
 <script>
-  const form = document.querySelector("form") as HTMLFormElement;
+  import confetti from "canvas-confetti";
+  import { prefersReducedMotion } from "@lib/motion";
+
+  const form = document.getElementById("contact-form") as HTMLFormElement;
   const result = document.getElementById("form-result") as HTMLDivElement;
+  const submit = form.querySelector<HTMLButtonElement>("[data-submit]");
+  const submitLabel = form.querySelector<HTMLElement>("[data-submit-label]");
+
+  const setPending = (pending: boolean) => {
+    if (!submit || !submitLabel) return;
+    submit.disabled = pending;
+    submit.classList.toggle("is-pending", pending);
+    submitLabel.textContent = pending ? "Whistle blown…" : "Send Offer";
+  };
+
+  // GOAL: the net ripples, the signature line signs itself, confetti flies.
+  const celebrate = (name: string) => {
+    const signature = form.querySelector<HTMLElement>(".signature");
+    if (signature) signature.textContent = name;
+    document.dispatchEvent(new CustomEvent("matchday:sfx", { detail: "goal" }));
+    if (prefersReducedMotion()) return;
+
+    form.classList.remove("goal");
+    void form.offsetWidth;
+    form.classList.add("goal");
+
+    const rect = submit?.getBoundingClientRect();
+    confetti({
+      particleCount: 120,
+      spread: 75,
+      startVelocity: 45,
+      origin: rect
+        ? {
+            x: (rect.left + rect.width / 2) / window.innerWidth,
+            y: rect.top / window.innerHeight,
+          }
+        : { y: 0.7 },
+      colors: ["#c8ff3d", "#e8efe9", "#ffb020"],
+      disableForReducedMotion: true,
+    });
+  };
+
+  type Outcome = "goal" | "yellow" | "red";
+
+  // Referee decisions: goal = sent, yellow = fix your input, red = server/network error.
+  const showResult = (outcome: Outcome, text: string) => {
+    result.dataset.outcome = outcome;
+    result.className = "result mt-6 flex items-center gap-3 text-sm";
+    result.replaceChildren();
+    const card = document.createElement("span");
+    card.className = "ref-card";
+    card.setAttribute("aria-hidden", "true");
+    const message = document.createElement("span");
+    message.textContent = text;
+    result.append(card, message);
+  };
+
+  form.addEventListener(
+    "invalid",
+    () =>
+      showResult("yellow", "Yellow card! Please fill in all required fields."),
+    true,
+  );
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     const formData = new FormData(form);
+    setPending(true);
 
     try {
       const response = await fetch(form.action, {
@@ -137,19 +381,24 @@ import Section from "./Section.astro";
       const data = await response.json();
 
       if (data.success) {
-        result.className = "mt-4 text-sm text-green-400";
-        result.textContent = "Thank you! Your message has been sent successfully.";
-        result.classList.remove("hidden");
+        celebrate(
+          `${formData.get("firstName") ?? ""} ${formData.get("lastName") ?? ""}`.trim(),
+        );
+        showResult(
+          "goal",
+          "Thank you! Your message has been sent successfully.",
+        );
         form.reset();
       } else {
-        result.className = "mt-4 text-sm text-red-400";
-        result.textContent = data.message || "Something went wrong. Please try again.";
-        result.classList.remove("hidden");
+        showResult(
+          response.status === 400 ? "yellow" : "red",
+          data.message || "Something went wrong. Please try again.",
+        );
       }
     } catch {
-      result.className = "mt-4 text-sm text-red-400";
-      result.textContent = "Something went wrong. Please try again.";
-      result.classList.remove("hidden");
+      showResult("red", "Something went wrong. Please try again.");
+    } finally {
+      setPending(false);
     }
   });
 </script>

@@ -1,0 +1,354 @@
+---
+import { SITE_CONFIG, SITE_CONTENT } from "@config";
+import { PLAYER, squadNumber } from "@ui";
+
+const { hero, projects, hackathons, experience } = SITE_CONTENT;
+const prompt = `${hero.name.split(" ")[0].toLowerCase()}@${PLAYER.uniShort.toLowerCase()}:~$`;
+
+// Everything the terminal prints comes from the site content.
+const data = {
+  aop: PLAYER.rivalMeaning,
+  whoami: [
+    `${hero.name} · #${PLAYER.number}`,
+    hero.specialty,
+    hero.summary,
+    `CS @ ${PLAYER.uni} · ${PLAYER.club}`,
+  ],
+  projects: projects.map(
+    (p, i) => `#${String(squadNumber(i)).padEnd(3)} ${p.name}`,
+  ),
+  hackathons: hackathons.map(
+    (h) => `${(h.rank ?? "—").padEnd(20)} ${h.name} · ${h.location}`,
+  ),
+  experience: experience.map(
+    (e) => `${e.startDate.trim()} — ${e.endDate}  ${e.position} @ ${e.company}`,
+  ),
+  sections: Object.fromEntries(
+    SITE_CONFIG.navLinks.map((l) => [l.text.toLowerCase(), l.href]),
+  ),
+};
+---
+
+<dialog
+  data-term={JSON.stringify(data)}
+  class="var-terminal mx-auto mt-[12vh] w-[min(720px,calc(100vw-2rem))] bg-transparent p-0 text-chalk backdrop:bg-black/60 backdrop:backdrop-blur-[2px]"
+  aria-label="VAR: video assistant remote"
+>
+  <div
+    class="overflow-hidden rounded-2xl border border-floodlight/25 bg-[#050c09]/95 shadow-2xl"
+  >
+    <header
+      class="flex items-center gap-3 border-b border-chalk/10 px-4 py-2.5 font-mono text-[11px] text-muted"
+    >
+      <span class="flex gap-1.5" aria-hidden="true">
+        <span class="size-2.5 rounded-full bg-card-red/80"></span>
+        <span class="size-2.5 rounded-full bg-card-yellow/80"></span>
+        <span class="size-2.5 rounded-full bg-floodlight/80"></span>
+      </span>
+      <span class="flex-1 text-center tracking-[0.2em] uppercase"
+        >VAR · video assistant remote</span
+      >
+      <kbd class="rounded border border-chalk/15 px-1.5">esc</kbd>
+    </header>
+
+    <div
+      class="var-body h-[min(420px,60vh)] overflow-y-auto px-4 py-3 font-mono text-[13px] leading-relaxed"
+      data-term-body
+    >
+      <ol class="space-y-1" data-term-log aria-live="polite"></ol>
+      <form
+        class="mt-1 flex items-center gap-2"
+        data-term-form
+        autocomplete="off"
+      >
+        <label for="var-input" class="shrink-0 text-floodlight">{prompt}</label>
+        <input
+          id="var-input"
+          class="min-w-0 flex-1 bg-transparent text-chalk caret-floodlight outline-none"
+          spellcheck="false"
+          autocapitalize="off"
+          data-term-input
+        />
+      </form>
+    </div>
+  </div>
+</dialog>
+
+<script>
+  import { lockScroll, scrollToTarget } from "@lib/motion";
+  import { playKickoff } from "@lib/kickoff";
+
+  const dialog = document.querySelector<HTMLDialogElement>(".var-terminal");
+  const log = document.querySelector<HTMLOListElement>("[data-term-log]");
+  const body = document.querySelector<HTMLElement>("[data-term-body]");
+  const form = document.querySelector<HTMLFormElement>("[data-term-form]");
+  const input = document.querySelector<HTMLInputElement>("[data-term-input]");
+  const promptText =
+    document.querySelector("label[for='var-input']")?.textContent ?? "$";
+
+  type Line = string | { text: string; tone?: "accent" | "muted" | "error" };
+
+  const print = (...lines: Line[]) => {
+    lines.forEach((line) => {
+      const li = document.createElement("li");
+      const { text, tone } =
+        typeof line === "string" ? { text: line, tone: undefined } : line;
+      li.textContent = text;
+      li.className =
+        "whitespace-pre-wrap " + (tone ? `term-${tone}` : "text-chalk/85");
+      log?.append(li);
+    });
+    body?.scrollTo({ top: body.scrollHeight });
+  };
+
+  const history: string[] = [];
+  let historyIndex = 0;
+
+  const data: {
+    aop: string[];
+    whoami: string[];
+    projects: string[];
+    hackathons: string[];
+    experience: string[];
+    sections: Record<string, string>;
+  } = JSON.parse(dialog?.dataset.term ?? "{}");
+
+  type Command = { help: string; run: (args: string[]) => void };
+  const hidden: Record<string, () => void> = {};
+
+  const listings: Record<string, string[]> = {
+    projects: data.projects,
+    hackathons: data.hackathons,
+    experience: data.experience,
+  };
+
+  const commands: Record<string, Command> = {
+    help: {
+      help: "list available commands",
+      run: () =>
+        print(
+          ...Object.entries(commands).map(
+            ([name, c]) => `  ${name.padEnd(12)} ${c.help}`,
+          ),
+          { text: "  tip: ↑/↓ for history", tone: "muted" },
+        ),
+    },
+    whoami: { help: "who's wearing #17", run: () => print(...data.whoami) },
+    ls: {
+      help: "ls projects | hackathons | experience",
+      run: ([what]) => {
+        const list = listings[what ?? ""];
+        if (list) print(...list);
+        else print(...Object.keys(listings).map((k) => `${k}/`));
+      },
+    },
+    goto: {
+      help: `goto ${Object.keys(data.sections).join(" | ")}`,
+      run: ([where]) => {
+        const href = data.sections[where?.toLowerCase() ?? ""];
+        if (!href) {
+          print({
+            text: `goto: unknown section "${where ?? ""}"`,
+            tone: "error",
+          });
+          return;
+        }
+        print({ text: `→ moving to ${where}`, tone: "accent" });
+        dialog?.close();
+        scrollToTarget(href);
+      },
+    },
+    cv: {
+      help: "download the resume",
+      run: () => {
+        print({
+          text: "→ downloading Mohammed_Halboup_Resume.pdf",
+          tone: "accent",
+        });
+        const a = document.createElement("a");
+        a.href = "/Halboup_Mohammed.pdf";
+        a.download = "Mohammed_Halboup_Resume.pdf";
+        a.click();
+      },
+    },
+    contact: {
+      help: "open the transfer desk",
+      run: () => {
+        dialog?.close();
+        scrollToTarget("#contact");
+        setTimeout(
+          () =>
+            document
+              .querySelector<HTMLInputElement>("#firstName")
+              ?.focus({ preventScroll: true }),
+          600,
+        );
+      },
+    },
+    kickoff: {
+      help: "replay the floodlights intro",
+      run: () => {
+        dialog?.close();
+        scrollToTarget("#hero");
+        playKickoff();
+      },
+    },
+    penalty: {
+      help: "score a penalty, unlock a fact about Halboup",
+      run: () => {
+        dialog?.close();
+        document.dispatchEvent(new CustomEvent("matchday:penalty"));
+      },
+    },
+    clear: { help: "clear the screen", run: () => log?.replaceChildren() },
+    aop: {
+      help: "what does AOP mean?",
+      run: () => {
+        const [definition, here] = data.aop;
+        print(definition, { text: here, tone: "accent" });
+      },
+    },
+    exit: { help: "close the VAR", run: () => dialog?.close() },
+  };
+
+  // Hidden extras, not listed in `help`.
+  const easterEggs: Record<string, string> = {
+    sudo: "Nice try. The referee's decision is final.",
+    var: "Checking… checking… the goal stands. ✔",
+    offside: "Not offside. He was level with the last defender.",
+  };
+
+  Object.entries(easterEggs).forEach(([name, text]) => {
+    hidden[name] = () => print({ text, tone: "accent" });
+  });
+
+  const run = (raw: string) => {
+    print({ text: `${promptText} ${raw}`, tone: "muted" });
+    const [cmd, ...args] = raw.trim().split(/\s+/);
+    if (!cmd) return;
+    const name = cmd.toLowerCase();
+    const command = commands[name];
+    if (command) command.run(args);
+    else if (hidden[name]) hidden[name]();
+    else
+      print({
+        text: `command not found: ${cmd} — try \`help\``,
+        tone: "error",
+      });
+  };
+
+  const open = () => {
+    if (!dialog || dialog.open) return;
+    dialog.showModal();
+    lockScroll(true);
+    if (!log?.childElementCount) {
+      print({
+        text: "VAR check in progress… type `help` to see what I can review.",
+        tone: "accent",
+      });
+    }
+    input?.focus();
+  };
+
+  form?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    if (!input) return;
+    const value = input.value;
+    input.value = "";
+    if (value.trim()) history.push(value);
+    historyIndex = history.length;
+    run(value);
+  });
+
+  input?.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+      e.preventDefault();
+      historyIndex = Math.max(
+        0,
+        Math.min(history.length, historyIndex + (e.key === "ArrowUp" ? -1 : 1)),
+      );
+      input.value = history[historyIndex] ?? "";
+    }
+
+    if (e.key === "Tab") {
+      e.preventDefault();
+      const [cmd = "", arg, ...rest] = input.value.trimStart().split(/\s+/);
+      if (rest.length) return;
+      const options =
+        arg === undefined
+          ? Object.keys(commands)
+          : cmd === "ls"
+            ? Object.keys(listings)
+            : cmd === "goto"
+              ? Object.keys(data.sections)
+              : [];
+      const partial = arg ?? cmd;
+      const matches = options.filter((o) =>
+        o.startsWith(partial.toLowerCase()),
+      );
+      if (matches.length === 1) {
+        input.value =
+          arg === undefined ? `${matches[0]} ` : `${cmd} ${matches[0]}`;
+      } else if (matches.length > 1) {
+        print({ text: matches.join("  "), tone: "muted" });
+      }
+    }
+  });
+
+  dialog?.addEventListener("close", () => lockScroll(false));
+  dialog?.addEventListener(
+    "click",
+    (e) => e.target === dialog && dialog.close(),
+  );
+
+  // `/` or Ctrl/Cmd+K opens the terminal, unless someone is typing in a field.
+  document.addEventListener("keydown", (e) => {
+    const target = e.target as HTMLElement;
+    const typing = target.closest(
+      "input, textarea, select, [contenteditable='true']",
+    );
+    if (
+      (e.key === "k" && (e.ctrlKey || e.metaKey)) ||
+      (e.key === "/" && !typing)
+    ) {
+      e.preventDefault();
+      open();
+    }
+  });
+
+  // Other parts of the page can open the VAR and run a command in it.
+  document.addEventListener("matchday:terminal", (e) => {
+    open();
+    const command = (e as CustomEvent<{ run?: string } | null>).detail?.run;
+    if (command) run(command);
+  });
+</script>
+
+<style>
+  .var-body :global(.term-accent) {
+    color: var(--color-floodlight);
+  }
+  .var-body :global(.term-muted) {
+    color: var(--color-muted);
+  }
+  .var-body :global(.term-error) {
+    color: #ff8a8a;
+  }
+
+  .var-terminal[open] > div {
+    animation: var-in 220ms ease-out;
+  }
+
+  @keyframes var-in {
+    from {
+      opacity: 0;
+      transform: translateY(-12px) scale(0.98);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .var-terminal[open] > div {
+      animation: none;
+    }
+  }
+</style>

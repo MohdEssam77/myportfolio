@@ -1,9 +1,17 @@
 ---
-import Header from "@components/Header.astro";
+import Scoreboard from "@components/Scoreboard.astro";
+import "lenis/dist/lenis.css";
 import "@fontsource/be-vietnam-pro";
-import "@fontsource-variable/gabarito";
+import "@fontsource/big-shoulders-display/latin-700";
+import "@fontsource/big-shoulders-display/latin-900";
+import "@fontsource/jetbrains-mono/latin-400";
+import "@fontsource/jetbrains-mono/latin-500";
 import { SITE_CONFIG } from "@config";
 import Footer from "@components/Footer.astro";
+import Stadium from "@components/Stadium.astro";
+import PenaltyGame from "@components/PenaltyGame.astro";
+import Terminal from "@components/Terminal.astro";
+import BallCursor from "@components/BallCursor.astro";
 
 const {
   title,
@@ -18,11 +26,11 @@ const {
 
 const canonicalURL = SITE_CONFIG.canonicalURL || (Astro.site ? new URL(Astro.url.pathname, Astro.site).href : Astro.url.pathname);
 
-const ogImgUrl = socialImage ? canonicalURL + socialImage : null;
+const ogImgUrl = socialImage ? new URL(socialImage, canonicalURL).href : null;
 ---
 
 <!doctype html>
-<html lang={lang} class="scroll-pt-16 scroll-smooth">
+<html lang={lang} class="scroll-pt-24 scroll-smooth motion-reduce:scroll-auto">
   <head>
     <meta charset="UTF-8" />
     <meta name="description" content={description} />
@@ -31,6 +39,26 @@ const ogImgUrl = socialImage ? canonicalURL + socialImage : null;
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
+    <script is:inline>
+      (() => {
+        const html = document.documentElement;
+        html.classList.add("js");
+        try {
+          const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+          const home = location.pathname === "/";
+          if (home && !reduced && !sessionStorage.getItem("matchday:kickoff-seen")) {
+            html.dataset.lights = "off";
+            html.classList.add("intro");
+            // Never leave the stadium dark if the intro script fails to load.
+            setTimeout(() => {
+              if (!html.classList.contains("intro")) return;
+              html.classList.remove("intro");
+              html.removeAttribute("data-lights");
+            }, 4000);
+          }
+        } catch {}
+      })();
+    </script>
 
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
@@ -43,11 +71,24 @@ const ogImgUrl = socialImage ? canonicalURL + socialImage : null;
     <meta property="twitter:description" content={description} />
     {ogImgUrl && <meta property="twitter:image" content={ogImgUrl} />}
   </head>
-  <body class="bg-black font-sans">
-    <Header siteLogo={siteLogo} navLinks={navLinks} />
-    <main class="mx-auto max-w-3xl px-5">
+  <body class="bg-pitch font-sans text-chalk">
+    <a href="#main" class="skip-link">Skip to content</a>
+    <Stadium />
+    <Scoreboard siteLogo={siteLogo} navLinks={navLinks} />
+    <main id="main" tabindex="-1" class="mx-auto max-w-6xl px-4 outline-none sm:px-6">
       <slot />
     </main>
     <Footer author={author} socialLinks={socialLinks} />
+    <PenaltyGame />
+    <Terminal />
+    <BallCursor />
+
+    <script>
+      import { initAutoplayVideos, initMagnetic, initReveal, initSmoothScroll } from "@lib/motion";
+      initSmoothScroll();
+      initReveal();
+      initMagnetic();
+      initAutoplayVideos();
+    </script>
   </body>
 </html>

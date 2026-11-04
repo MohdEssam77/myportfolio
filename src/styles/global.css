@@ -2,12 +2,19 @@
 
 @theme {
   --font-sans: "Be Vietnam Pro", system-ui, sans-serif;
-  --font-serif: "Gabarito Variable", ui-serif, serif;
+  --font-display: "Big Shoulders Display", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
 
-  --color-primary: #2563eb;
-  --color-neutral: #94a3b8;
-  --color-white: #e2e8f0;
-  --color-black: #0e141b;
+  /* Matchday palette */
+  --color-pitch: #0a1f17;
+  --color-turf: #12382a;
+  --color-turf-light: #1b4a38;
+  --color-chalk: #e8efe9;
+  --color-floodlight: #c8ff3d;
+  --color-led: #ffb020;
+  --color-muted: #8aa597;
+  --color-card-red: #ff3b3b;
+  --color-card-yellow: #ffd60a;
 
   --text-xs: 0.875rem;
   --text-xs--line-height: 1.125rem;
@@ -36,18 +43,139 @@
   --text-9xl: 6rem;
   --text-9xl--line-height: 6.625rem;
 
-  --tracking-tightest: -2px;
-  --tracking-tighter: -1px;
   --tracking-tight: -0.25px;
 
-  --animate-slide-in: slide-in 600ms ease both;
+}
 
-  @keyframes slide-in {
-    10% {
-      transform: translateY(-100%);
-    }
-    100% {
-      transform: translateY(0);
-    }
+/* Scroll reveal: only hide content when JS is running (html.js) */
+html.js [data-reveal] {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 700ms ease,
+    transform 700ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+html.js [data-reveal="left"] {
+  transform: translateX(-32px);
+}
+
+html.js [data-reveal].is-in {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.js [data-reveal] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* Stadium blackout used by the kick-off intro */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  pointer-events: none;
+  background: #000;
+  opacity: 0;
+  transition: opacity 90ms linear;
+}
+
+html[data-lights="off"] body::after {
+  opacity: 0.94;
+}
+
+/* Kick-off buttons */
+.btn-kick {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  padding: 1rem 1.75rem;
+  font-size: var(--text-sm);
+  line-height: 1.25rem;
+  font-weight: 600;
+  transform: translate(var(--mag-x, 0), var(--mag-y, 0));
+  transition:
+    transform 250ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    background-color 200ms,
+    color 200ms,
+    box-shadow 200ms;
+}
+
+.btn-kick:active {
+  scale: 0.96;
+}
+
+.btn-primary {
+  background: var(--color-floodlight);
+  color: var(--color-pitch);
+  box-shadow: 0 0 0 0 rgb(200 255 61 / 0.5);
+}
+
+.btn-primary:hover {
+  box-shadow: 0 0 32px -4px rgb(200 255 61 / 0.7);
+}
+
+.btn-ghost {
+  color: var(--color-chalk);
+  box-shadow: inset 0 0 0 1.5px rgb(232 239 233 / 0.25);
+}
+
+.btn-ghost:hover {
+  color: var(--color-floodlight);
+  box-shadow: inset 0 0 0 1.5px var(--color-floodlight);
+}
+
+html.scroll-locked {
+  overflow: hidden;
+}
+
+/* Accessibility. In the base layer so components that style their own
+   focus state (e.g. `outline-none` on the VAR and contract inputs) win. */
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--color-floodlight);
+    outline-offset: 3px;
+  }
+}
+
+.skip-link {
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 100;
+  border-radius: 0.5rem;
+  background: var(--color-floodlight);
+  padding: 0.6rem 1rem;
+  color: var(--color-pitch);
+  font-weight: 600;
+  transform: translateY(-200%);
+}
+
+.skip-link:focus-visible {
+  transform: none;
+}
+
+::selection {
+  background: var(--color-floodlight);
+  color: var(--color-pitch);
+}
+
+/* Reduced-motion safety net: anything that slips past a component's own
+   guard ends instantly instead of moving. Audited with getAnimations(). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
   }
 }

@@ -7,35 +7,283 @@ interface Props {
 }
 
 const { experience } = Astro.props;
+
+// Career = build-up play: oldest role starts at our own box (bottom),
+// the latest one is up front near the opponent's goal (top).
+const count = experience.length;
+const year = (date: string) => date.match(/\d{4}/)?.[0]?.slice(2) ?? "";
+const startTime = (date: string) => {
+  const parsed = Date.parse(`1 ${date.replace(",", "")}`);
+  return Number.isNaN(parsed) ? 0 : parsed;
+};
+// Chronological rank by start date; the content order is left untouched.
+const ranks = experience
+  .map((role, i) => ({ i, t: startTime(role.startDate) }))
+  .sort((a, b) => a.t - b.t)
+  .reduce<number[]>((acc, { i }, rank) => ((acc[i] = rank), acc), []);
+const markers = experience.map((role, i) => {
+  const step = ranks[i];
+  const y = count === 1 ? 50 : 84 - (step * 66) / (count - 1);
+  const x = step === count - 1 ? 50 : step % 2 === 0 ? 30 : 70;
+  return { x, y, number: step + 1, id: `role-${i}`, label: `'${year(role.startDate)}`, company: role.company };
+});
+
+// Passing line from the oldest role to the latest, in the board's 400x600 space.
+const points = [...markers].sort((a, b) => a.number - b.number).map((m) => ({ x: m.x * 4, y: m.y * 6 }));
+const passPath = points
+  .map((p, i) => {
+    if (i === 0) return `M${p.x} ${p.y}`;
+    const prev = points[i - 1];
+    // Bend each pass slightly outwards so it reads as a curled ball.
+    const cx = (prev.x + p.x) / 2 + (p.x > prev.x ? -40 : 40);
+    const cy = (prev.y + p.y) / 2;
+    return `Q${cx} ${cy} ${p.x} ${p.y}`;
+  })
+  .join(" ");
 ---
 
-<Section text="Work Experience" href="experience">
-  {
-    experience.map(({ company, position, startDate, endDate, summary }) => (
-      <div class="mb-10">
-        <h3 class="mb-1.5 font-serif text-2xl font-semibold text-white">
-          {company}
-        </h3>
-        <div class="flex flex-col items-start pb-5">
-          <h4 class="mb-0.5 font-serif text-2xl font-medium text-primary">
-            {position}
-          </h4>
-          <span class="pb-[2px] text-sm text-white/70">
-            {startDate} — {endDate}
-          </span>
-        </div>
-        {Array.isArray(summary) ? (
-          <ul class="list-none">
-            {summary.map((log) => (
-              <li class="relative mb-3 pl-8 text-base text-neutral before:absolute before:top-1 before:left-0 before:content-[url(/check.svg)]">
-                {log}
+<Section text="Work Experience" href="experience" wide>
+  <div class="tactics grid gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-16">
+    <div class="hidden lg:block">
+      <div class="tactics-board sticky top-28 mx-auto aspect-[2/3] w-full max-w-[420px] rounded-3xl p-4">
+        <svg
+          class="absolute inset-4 size-[calc(100%-2rem)] text-chalk/35"
+          viewBox="0 0 400 600"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+          aria-hidden="true"
+        >
+          <defs>
+            <filter id="chalk">
+              <feTurbulence type="fractalNoise" baseFrequency="1.2" numOctaves="2" result="noise"></feTurbulence>
+              <feDisplacementMap in="SourceGraphic" in2="noise" scale="2.5"></feDisplacementMap>
+            </filter>
+          </defs>
+          <g filter="url(#chalk)">
+            <rect x="10" y="10" width="380" height="580" rx="4"></rect>
+            <line x1="10" y1="300" x2="390" y2="300"></line>
+            <circle cx="200" cy="300" r="60"></circle>
+            <circle cx="200" cy="300" r="3" fill="currentColor"></circle>
+            <rect x="90" y="10" width="220" height="100"></rect>
+            <rect x="150" y="10" width="100" height="38"></rect>
+            <path d="M160 110a50 50 0 0 0 80 0"></path>
+            <rect x="90" y="490" width="220" height="100"></rect>
+            <rect x="150" y="552" width="100" height="38"></rect>
+            <path d="M160 490a50 50 0 0 1 80 0"></path>
+            <path d="M10 22a12 12 0 0 0 12-12M378 10a12 12 0 0 0 12 12M10 578a12 12 0 0 1 12 12M378 590a12 12 0 0 1 12-12"></path>
+          </g>
+        </svg>
+
+        <svg
+          class="pass-lines absolute inset-4 size-[calc(100%-2rem)] overflow-visible"
+          viewBox="0 0 400 600"
+          fill="none"
+          aria-hidden="true"
+        >
+          <defs>
+            <mask id="pass-mask" maskUnits="userSpaceOnUse">
+              <path class="pass-reveal" d={passPath} stroke="#fff" stroke-width="10" stroke-linecap="round"></path>
+            </mask>
+          </defs>
+          <path
+            d={passPath}
+            mask="url(#pass-mask)"
+            stroke="var(--color-floodlight)"
+            stroke-width="3"
+            stroke-dasharray="2 12"
+            stroke-linecap="round"
+          ></path>
+          <circle class="pass-ball" r="7" fill="#f4f7f4" stroke="#0a1f17" stroke-width="2" opacity="0"></circle>
+        </svg>
+
+        <ol class="absolute inset-4">
+          {
+            markers.map((m) => (
+              <li class="absolute -translate-x-1/2 -translate-y-1/2" style={`left:${m.x}%;top:${m.y}%`}>
+                <a
+                  href={`#${m.id}`}
+                  class="marker group flex flex-col items-center gap-1.5"
+                  data-marker={m.id}
+                  aria-label={`Role ${m.number}: ${m.company}`}
+                >
+                  <span class="marker-dot relative grid size-12 place-items-center rounded-full border-2 border-chalk/70 bg-pitch font-display text-xl font-black text-chalk transition-all duration-300">
+                    {m.number}
+                  </span>
+                  <span class="rounded bg-pitch/80 px-1.5 py-0.5 font-mono text-[10px] text-muted">{m.label}</span>
+                </a>
               </li>
-            ))}
-          </ul>
-        ) : (
-          <p class="text-base text-neutral">{summary}</p>
-        )}
+            ))
+          }
+        </ol>
       </div>
-    ))
-  }
+    </div>
+
+    <div class="relative flex flex-col gap-10 pl-12 lg:pl-0">
+      <span
+        class="absolute top-6 bottom-6 left-[15px] w-0 border-l-2 border-dashed border-chalk/20 lg:hidden"
+        aria-hidden="true"
+      ></span>
+      {
+        experience.map(({ company, position, startDate, endDate, summary }, i) => (
+          <article
+            class="tactic-panel relative scroll-mt-32 rounded-2xl border border-chalk/10 bg-turf/40 p-6 backdrop-blur-sm transition-colors duration-500 sm:p-8"
+            id={`role-${i}`}
+            data-panel={`role-${i}`}
+            data-reveal
+          >
+            <span
+              class="mobile-marker absolute top-6 -left-12 grid size-8 place-items-center rounded-full border-2 border-chalk/60 bg-pitch font-display text-sm font-black text-chalk transition-colors lg:hidden"
+              aria-hidden="true"
+            >
+              {markers[i].number}
+            </span>
+            <div class="mb-4 flex flex-wrap items-center gap-3 font-mono text-xs text-muted">
+              <span class="rounded bg-chalk/10 px-2 py-1 text-chalk">
+                Role {String(markers[i].number).padStart(2, "0")}
+              </span>
+              <span>
+                {startDate.trim()} — {endDate}
+              </span>
+            </div>
+            <h3 class="font-display text-[1.7rem] leading-none font-black tracking-wide [overflow-wrap:anywhere] text-chalk uppercase sm:text-4xl">
+              {company}
+            </h3>
+            <h4 class="mt-2 mb-6 font-display text-xl font-bold tracking-wide text-floodlight uppercase sm:text-2xl">
+              {position}
+            </h4>
+            {Array.isArray(summary) ? (
+              <ul class="space-y-3">
+                {summary.map((log, j) => (
+                  <li
+                    class="chalk-item relative pl-8 text-base text-muted"
+                    data-reveal
+                    style={`--reveal-delay:${150 + j * 120}ms`}
+                  >
+                    <svg
+                      class="absolute top-1 left-0 text-floodlight"
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M3 13c4-1 9-1 15-1" />
+                      <path d="M14 7l5 5-5 5" />
+                    </svg>
+                    {log}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p class="text-base text-muted">{summary}</p>
+            )}
+          </article>
+        ))
+      }
+    </div>
+  </div>
 </Section>
+
+<script>
+  import { prefersReducedMotion, tween } from "@lib/motion";
+
+  // Light up the marker of the role panel currently in the middle of the screen.
+  const markers = document.querySelectorAll<HTMLElement>("[data-marker]");
+  const panels = document.querySelectorAll<HTMLElement>("[data-panel]");
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        const id = (entry.target as HTMLElement).dataset.panel;
+        markers.forEach((m) => m.classList.toggle("is-active", m.dataset.marker === id));
+        panels.forEach((p) => p.classList.toggle("is-active", p.dataset.panel === id));
+      });
+    },
+    { rootMargin: "-45% 0px -45% 0px" },
+  );
+  panels.forEach((p) => observer.observe(p));
+
+  // Draw the passing line (and run the ball along it) when the board comes into view.
+  const reveal = document.querySelector<SVGPathElement>(".pass-reveal");
+  const ball = document.querySelector<SVGCircleElement>(".pass-ball");
+
+  if (reveal && ball) {
+    const length = reveal.getTotalLength();
+    reveal.style.strokeDasharray = `${length}`;
+
+    if (prefersReducedMotion()) {
+      reveal.style.strokeDashoffset = "0";
+    } else {
+      reveal.style.strokeDashoffset = `${length}`;
+      const board = document.querySelector(".tactics-board");
+      const boardObserver = new IntersectionObserver(
+        ([entry]) => {
+          if (!entry.isIntersecting) return;
+          boardObserver.disconnect();
+          ball.setAttribute("opacity", "1");
+          tween(2400, (t) => {
+            reveal.style.strokeDashoffset = `${length * (1 - t)}`;
+            const p = reveal.getPointAtLength(length * t);
+            ball.setAttribute("cx", `${p.x}`);
+            ball.setAttribute("cy", `${p.y}`);
+          });
+        },
+        { rootMargin: "0px 0px -30% 0px" },
+      );
+      if (board) boardObserver.observe(board);
+    }
+  }
+</script>
+
+<style>
+  .tactic-panel.is-active {
+    border-color: rgb(200 255 61 / 0.35);
+  }
+
+  .tactic-panel.is-active .mobile-marker {
+    border-color: var(--color-floodlight);
+    background: var(--color-floodlight);
+    color: var(--color-pitch);
+  }
+
+  .marker.is-active .marker-dot,
+  .marker:hover .marker-dot {
+    border-color: var(--color-floodlight);
+    background: var(--color-floodlight);
+    color: var(--color-pitch);
+    box-shadow: 0 0 0 8px rgb(200 255 61 / 0.15), 0 0 30px rgb(200 255 61 / 0.5);
+  }
+
+  .marker.is-active .marker-dot::after {
+    content: "";
+    position: absolute;
+    inset: -6px;
+    border-radius: 9999px;
+    border: 2px solid var(--color-floodlight);
+    animation: ping 1.6s ease-out infinite;
+  }
+
+  @keyframes ping {
+    to { transform: scale(1.7); opacity: 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marker.is-active .marker-dot::after { animation: none; }
+  }
+
+  .tactics-board {
+    background:
+      radial-gradient(120% 90% at 50% 50%, #183f30 0%, #0d281e 70%),
+      var(--color-turf);
+    box-shadow:
+      inset 0 0 0 1px rgb(232 239 233 / 0.08),
+      inset 0 0 80px rgb(0 0 0 / 0.45),
+      0 30px 60px -30px rgb(0 0 0 / 0.7);
+  }
+</style>

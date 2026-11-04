@@ -10,7 +10,7 @@
 
 <br />
 
-*A modern, responsive portfolio built with Astro & Tailwind CSS*
+*MATCHDAY.exe — a portfolio that plays like a night match on a terminal. Built with Astro & Tailwind CSS*
 
 </div>
 
@@ -18,13 +18,44 @@
 
 ## ✨ Features
 
-- ⚡ **Blazing Fast** — Built with [Astro](https://astro.build) for optimal performance and SEO
-- 🎨 **Modern Design** — Clean, minimal aesthetic with smooth animations and sticky card effects
-- 📱 **Fully Responsive** — Optimized for all screen sizes, from mobile to desktop
-- 🌙 **Dark Theme** — Elegant dark theme with carefully crafted color palette
-- 🏆 **Hackathons Section** — Dedicated section showcasing hackathon projects with images and achievements
-- 🔧 **Easy to Customize** — All content managed through a single config file
-- 🚀 **Deploy Ready** — Static build ready for Vercel, Netlify, or any static host
+The site is one 90-minute match. Scrolling is the match clock, and each section is a phase of the game:
+
+| Phase | Section | What happens |
+|-------|---------|--------------|
+| 0' | **Kick-off** (hero) | Floodlights flicker on, the name slams in, and a holographic player card (#17) tilts with the cursor and flips to a scouting report |
+| 12' | **Tactics Board** (experience) | Roles are markers on a chalk pitch, joined by passing lines that draw themselves |
+| 30' | **The Squad** (projects) | Projects line up in a formation. Click a player to scout them, or switch to List view |
+| 45' | **Half-time Stats** | Broadcast head-to-head, with every number computed from the content |
+| 55' | **Trophy Cabinet** (hackathons) | Gold/silver/bronze trophies, each opening a match report with a photo gallery |
+| 75' | **Post-match Interview** (about) | The about text types out at a press conference |
+| 85' | **Transfer Desk** (contact) | The contact form is a transfer offer: yellow card for invalid input, red card for errors, goal + confetti when sent |
+| 90+2' | **Full Time** (footer) | Final score, plus "Know more about Halboup": score a penalty to unlock a random fact |
+
+Also:
+
+- 🖥️ **VAR (video assistant remote)**: a terminal-style remote control, press <kbd>/</kbd> or <kbd>Ctrl</kbd>+<kbd>K</kbd> (or tap **VAR** in the scoreboard)
+- 🔊 **Stadium sound**: whistle, crowd and keeper sounds synthesized with WebAudio, **off by default**
+- 🚩 **Custom 404**: "Offside!"
+- ♿ **Accessible**: keyboard friendly, skip link, focus rings, and full `prefers-reduced-motion` support (no intro, no parallax, no autoplaying clips)
+- 📱 **Mobile-first layouts**: swipeable lineup, scrolling trophy shelf, chalk-line timeline
+- ⚡ **Fast**: static Astro build, WebP images via `astro:assets`, GIFs served as small looping videos
+
+### VAR commands
+
+| Command | Does |
+|---------|------|
+| `help` | List commands |
+| `whoami` | Who's wearing #17 |
+| `ls projects \| hackathons \| experience` | List content |
+| `goto <section>` | Scroll to a section (`experience`, `projects`, `hackathons`, `about`, `contact`) |
+| `cv` | Download the resume |
+| `contact` | Jump to the transfer desk |
+| `aop` | Who's the opponent on the scoreboard? |
+| `kickoff` | Replay the floodlights intro |
+| `penalty` | Score a penalty to unlock a random fact about Halboup |
+| `clear` / `exit` | Clear the screen / close |
+
+<kbd>Tab</kbd> autocompletes, <kbd>↑</kbd>/<kbd>↓</kbd> walk through history. There are a few hidden commands too.
 
 ---
 
@@ -35,6 +66,9 @@
 | [Astro](https://astro.build) | Static Site Generator |
 | [Tailwind CSS v4](https://tailwindcss.com) | Styling & Design System |
 | [TypeScript](https://www.typescriptlang.org) | Type Safety |
+| [GSAP](https://gsap.com) + [Lenis](https://lenis.darkroom.engineering) | Scroll choreography & smooth scrolling |
+| [canvas-confetti](https://github.com/catdad/canvas-confetti) | Goal celebration |
+| [sharp](https://sharp.pixelplumbing.com) | Image optimization |
 | [Prettier](https://prettier.io) | Code Formatting |
 
 ---
@@ -80,16 +114,22 @@ pnpm preview
 
 ```
 myportfolio/
-├── public/              # Static assets (images, icons, etc.)
+├── docs/                # Epic / design plan for the matchday redesign
+├── public/              # Static files (resume, favicon, OG image, GIFs)
+│   └── media/           # WebM/MP4 versions of the GIFs
 ├── src/
-│   ├── components/      # Reusable Astro components
-│   ├── config/          # Site configuration & content
-│   ├── layouts/         # Page layouts
-│   ├── pages/           # Route pages
-│   ├── styles/          # Global styles
+│   ├── assets/content/  # Project & hackathon images (optimized at build)
+│   ├── components/      # Astro components (one per match phase + overlays)
+│   ├── config/
+│   │   ├── index.ts     # Site content (single source of truth)
+│   │   └── ui.ts        # UI-only data: #17, section minutes, formations, trophy tiers
+│   ├── icons/           # Ball, trophy and menu SVG components
+│   ├── layouts/         # Page layout (stadium background, scoreboard, footer)
+│   ├── lib/             # Motion, kick-off intro, sound, penalty game, media helpers
+│   ├── pages/           # index, 404 and the contact API route
+│   ├── styles/          # Global styles & design tokens
 │   └── types/           # TypeScript type definitions
 ├── astro.config.mjs     # Astro configuration
-├── tailwind.config.js   # Tailwind CSS configuration
 └── tsconfig.json        # TypeScript configuration
 ```
 
@@ -97,7 +137,9 @@ myportfolio/
 
 ## ⚙️ Customization
 
-All site content is managed in a single file: **`src/config/index.ts`**
+All site content is managed in a single file: **`src/config/index.ts`**. Everything the design shows (stats, formation, trophy colours, terminal output) is derived from it.
+
+> **Images:** reference them by file name as before (e.g. `image: "/swiss.png"`), but put the file in `src/assets/content/` so it gets optimized. Files left in `public/` still work, they just aren't resized. To give a GIF a video version, add `public/media/<name>.webm` and `.mp4` and list the name in `src/lib/media.ts`.
 
 ### Personal Information
 
@@ -133,8 +175,8 @@ hackathons: [
     name: "Hackathon Name",
     location: "City, Country",
     summary: "What you built and achieved...",
-    rank: "Winner / 1st Place",  // Optional
-    images: ["/image1.png", "/image2.png"],  // Up to 3 images
+    rank: "Winner (1st Place)",  // Optional: "1st"/"Winner" → gold, "2nd" → silver, "3rd" → bronze
+    images: ["/image1.png", "/image2.png"],  // Shown in the match report gallery
     link: "https://github.com/your/repo",  // Optional
     preview: "https://live-demo.com",  // Optional
   },
@@ -161,7 +203,7 @@ experience: [
 
 ## 📄 Resume
 
-The most recent version of my resume is always available for download in the navigation bar at the top of the page. Click "Resume" to download the latest PDF version.
+The most recent version of my resume is always available from the **Resume** button in the scoreboard, the hero's **Download Resume** button, or the `cv` command in the VAR.
 
 ---
 

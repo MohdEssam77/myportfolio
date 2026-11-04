@@ -1,17 +1,38 @@
 ---
+import { SECTION_LABELS, SECTION_MINUTES } from "@ui";
+
 interface Props {
   text: string;
   href: string;
+  wide?: boolean;
 }
 
-const { text, href } = Astro.props;
+const { text, href, wide = false } = Astro.props;
+const minute = SECTION_MINUTES[href];
+const label = SECTION_LABELS[href];
 ---
 
-<section id={href} class="py-24">
-  <h2
-    class="mb-14 font-serif text-4xl font-bold tracking-tighter text-white md:text-5xl"
-  >
-    {text}
-  </h2>
+<section id={href} class:list={["relative py-20 sm:py-28", !wide && "mx-auto max-w-3xl"]}>
+  <header class="mb-12 sm:mb-16">
+    {
+      (minute !== undefined || label) && (
+        <div
+          data-reveal="left"
+          class="mb-4 inline-flex items-stretch overflow-hidden rounded-md font-mono text-xs tracking-[0.2em] uppercase"
+        >
+          {minute !== undefined && (
+            <span class="bg-floodlight px-2.5 py-1.5 font-medium text-pitch">{minute}'</span>
+          )}
+          {label && <span class="bg-chalk/10 px-3 py-1.5 text-chalk/80">{label}</span>}
+        </div>
+      )
+    }
+    <h2
+      data-reveal
+      class="font-display text-5xl leading-[0.9] font-black tracking-tight text-chalk uppercase sm:text-7xl"
+    >
+      {text}
+    </h2>
+  </header>
   <slot />
 </section>

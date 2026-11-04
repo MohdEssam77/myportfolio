@@ -7,6 +7,7 @@ export const SITE_CONFIG: SiteConfig = {
     "Computer Science student at Universität des Saarlandes and a fullstack developer at PersonalClientCare (PCC).",
   lang: "en",
   siteLogo: "/Mo_small.jpg",
+  socialImage: "/og-image.png",
   navLinks: [
     { text: "Experience", href: "#experience" },
     { text: "Projects", href: "#projects" },

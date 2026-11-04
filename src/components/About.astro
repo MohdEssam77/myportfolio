@@ -1,26 +1,288 @@
 ---
 import Section from "./Section.astro";
-import { Image } from "astro:assets";
+import Media from "./Media.astro";
 import type { AboutProps, HeroProps } from "@types";
+import { PLAYER } from "@ui";
 
 type Props = AboutProps & Pick<HeroProps, "name">;
 
 const { description, image, name } = Astro.props;
+const quote = description.replace(/\s+/g, " ").trim();
+const initials = name
+  .split(" ")
+  .map((part) => part[0])
+  .join("");
+const wallTiles = Array.from(
+  { length: 48 },
+  (_, i) => [initials, `#${PLAYER.number}`, `${PLAYER.uniShort} · 05`][i % 3],
+);
 ---
 
-<Section text="About Me" href="about">
-  <div class="flex flex-col items-center gap-12 md:flex-row md:gap-8">
-    <p class="w-auto text-base text-neutral md:pr-5">{description}</p>
+<Section text="About Me" href="about" wide>
+  <div class="press relative overflow-hidden rounded-3xl">
     <div
-      class="h-80 w-64 flex-shrink-0 rotate-[5deg] bg-white p-4 md:rotate-[7deg]"
+      class="sponsor-wall pointer-events-none absolute inset-0 grid grid-cols-3 content-start gap-x-10 gap-y-10 p-6 sm:grid-cols-5 lg:grid-cols-6"
+      aria-hidden="true"
     >
-      <Image
-        class="object-cover"
-        src={image}
-        width="260"
-        height="260"
-        alt={name}
-      />
+      {wallTiles.map((tile) => <span>{tile}</span>)}
+    </div>
+
+    <div
+      class="relative grid items-center gap-12 p-6 sm:p-10 md:grid-cols-[1fr_auto] md:gap-10 lg:p-14"
+    >
+      <div>
+        <div class="mb-6 flex items-center gap-3">
+          <span
+            class="grid size-11 place-items-center rounded-full bg-chalk/10 text-chalk"
+            aria-hidden="true"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            >
+              <rect x="9" y="2" width="6" height="12" rx="3"></rect>
+              <path d="M5 11a7 7 0 0 0 14 0M12 18v4M8 22h8"></path>
+            </svg>
+          </span>
+          <span
+            class="sound-bars flex h-5 items-end gap-0.5"
+            aria-hidden="true"
+          >
+            <span></span><span></span><span></span><span></span>
+          </span>
+          <span
+            class="inline-flex items-center gap-2 rounded bg-card-red px-2 py-1 font-mono text-[11px] font-medium tracking-widest text-white uppercase"
+          >
+            <span class="live-pulse size-1.5 rounded-full bg-white"></span>Live
+          </span>
+          <span
+            class="hidden font-mono text-[11px] tracking-[0.2em] text-muted uppercase sm:inline"
+            >Press room</span
+          >
+        </div>
+        <blockquote class="relative">
+          <p
+            class="relative text-lg leading-relaxed text-chalk sm:text-xl"
+            data-quote
+          >
+            <span class="sr-only">{quote}</span>
+            <span class="invisible" aria-hidden="true">{quote}</span>
+            <span class="absolute inset-0" aria-hidden="true"
+              ><span data-typed>{quote}</span><span class="caret" data-caret
+              ></span></span
+            >
+          </p>
+          <footer
+            class="mt-6 font-mono text-xs tracking-[0.2em] text-muted uppercase"
+          >
+            — {name}, #{PLAYER.number}
+          </footer>
+        </blockquote>
+      </div>
+
+      <figure
+        class="polaroid relative mx-auto w-64 flex-shrink-0 rotate-[5deg] bg-white p-4 pb-3 md:rotate-[7deg]"
+        data-reveal
+      >
+        <Media
+          class="polaroid-photo aspect-square w-full object-cover object-[32%_40%]"
+          src={image}
+          width="260"
+          height="260"
+          alt={name}
+        />
+        <figcaption class="mt-3 text-center font-mono text-xs text-pitch/70">
+          post-match · #{PLAYER.number}
+        </figcaption>
+      </figure>
     </div>
   </div>
 </Section>
+
+<script>
+  import { prefersReducedMotion } from "@lib/motion";
+
+  // Type the interview answer out once it's on screen. Click to skip.
+  const quote = document.querySelector<HTMLElement>("[data-quote]");
+  const typed = quote?.querySelector<HTMLElement>("[data-typed]");
+  const caret = quote?.querySelector<HTMLElement>("[data-caret]");
+
+  if (quote && typed && !prefersReducedMotion()) {
+    const full = typed.textContent ?? "";
+    let shown = 0;
+    let done = false;
+    typed.textContent = "";
+
+    const finish = () => {
+      done = true;
+      typed.textContent = full;
+      caret?.classList.add("is-done");
+    };
+
+    const tick = () => {
+      if (done) return;
+      shown = Math.min(full.length, shown + 2);
+      typed.textContent = full.slice(0, shown);
+      if (shown < full.length) requestAnimationFrame(tick);
+      else finish();
+    };
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        observer.disconnect();
+        requestAnimationFrame(tick);
+      },
+      { threshold: 0.5 },
+    );
+    observer.observe(quote);
+    quote.addEventListener("click", finish);
+  }
+</script>
+
+<style>
+  .caret {
+    display: inline-block;
+    width: 0.55em;
+    height: 1.1em;
+    margin-left: 2px;
+    vertical-align: -0.2em;
+    background: var(--color-floodlight);
+    animation: blink 1s steps(1) infinite;
+  }
+
+  .caret.is-done {
+    animation:
+      blink 1s steps(1) 3,
+      caret-out 0s 3s forwards;
+  }
+
+  @keyframes caret-out {
+    to {
+      opacity: 0;
+    }
+  }
+
+  @keyframes blink {
+    50% {
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .caret {
+      display: none;
+    }
+  }
+
+  .sound-bars span {
+    width: 3px;
+    height: 30%;
+    border-radius: 2px;
+    background: var(--color-floodlight);
+    animation: talk 900ms ease-in-out infinite;
+  }
+
+  .sound-bars span:nth-child(2) {
+    animation-delay: -300ms;
+  }
+  .sound-bars span:nth-child(3) {
+    animation-delay: -600ms;
+  }
+  .sound-bars span:nth-child(4) {
+    animation-delay: -150ms;
+  }
+
+  @keyframes talk {
+    50% {
+      height: 100%;
+    }
+  }
+
+  .live-pulse {
+    animation: blink 1.4s steps(1) infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sound-bars span,
+    .live-pulse {
+      animation: none;
+    }
+  }
+
+  .polaroid {
+    box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.75);
+  }
+
+  .polaroid::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: #fff;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  :global(html.js) .polaroid.is-in::after {
+    animation: flash 900ms ease-out 250ms;
+  }
+
+  :global(html.js) .polaroid.is-in .polaroid-photo {
+    animation: develop 2.2s ease-out 250ms both;
+  }
+
+  @keyframes flash {
+    0% {
+      opacity: 0;
+    }
+    10% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+
+  @keyframes develop {
+    from {
+      filter: brightness(1.8) sepia(0.6) contrast(0.7);
+    }
+    to {
+      filter: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .polaroid::after,
+    .polaroid-photo {
+      animation: none !important;
+    }
+  }
+
+  .press {
+    background: linear-gradient(180deg, #0f2b20, #091a12);
+    box-shadow:
+      inset 0 0 0 1px rgb(232 239 233 / 0.08),
+      0 40px 80px -40px rgb(0 0 0 / 0.8);
+  }
+
+  .sponsor-wall {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: 1.25rem;
+    letter-spacing: 0.05em;
+    color: rgb(232 239 233 / 0.045);
+    text-transform: uppercase;
+    white-space: nowrap;
+    transform: rotate(-8deg) scale(1.3);
+  }
+
+  .sponsor-wall span:nth-child(odd) {
+    color: rgb(200 255 61 / 0.05);
+  }
+</style>

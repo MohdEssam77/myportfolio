@@ -1,99 +1,543 @@
 ---
 import Section from "./Section.astro";
-import { Image } from "astro:assets";
+import Media from "./Media.astro";
 import type { HackathonProps } from "@types";
+import { trophyTier, type TrophyTier } from "@ui";
+import Trophy from "@icons/Trophy.astro";
 
 interface Props {
   hackathons: HackathonProps[];
 }
 
 const { hackathons } = Astro.props;
+
+// Podium arrangement: best trophy in the middle, the rest fanning out.
+const tierOrder: Record<TrophyTier, number> = {
+  gold: 0,
+  silver: 1,
+  bronze: 2,
+  medal: 3,
+};
+const ranked = hackathons
+  .map((h, index) => ({ ...h, index, tier: trophyTier(h.rank) }))
+  .sort((a, b) => tierOrder[a.tier] - tierOrder[b.tier]);
+const TROPHY_HEIGHT: Record<TrophyTier, string> = {
+  gold: "h-44",
+  silver: "h-36",
+  bronze: "h-32",
+  medal: "h-28",
+};
+const shelf: typeof ranked = [];
+ranked.forEach((t, i) => (i % 2 === 0 ? shelf.push(t) : shelf.unshift(t)));
 ---
 
-<Section text="Hackathons" href="hackathons">
-  {
-    hackathons.map(({ name, location, summary, rank, images, link, preview }, index) => {
-      const topDesktop = 98 + index * 40;
-      const zIndex = index + 1;
-      const safeImages = (Array.isArray(images) ? images : []).slice(0, 3);
-
-      return (
-        <div
-          style={`--i: ${index}; --card-top-desktop: ${topDesktop}px; z-index: ${zIndex};`}
-          class="sticky top-[calc(88px+min(var(--i)*12px,25vh))] mb-12 rounded-2xl border border-neutral/20 bg-black sm:top-[var(--card-top-desktop)]"
-        >
-          <div
-            style="-webkit-overflow-scrolling: touch;"
-            class="bg-difu relative z-[1] flex h-[calc(100dvh-140px)] flex-col touch-pan-y overflow-y-scroll rounded-2xl bg-[#1c232d] before:absolute before:inset-0 before:z-[-1] before:rounded-2xl before:bg-[url(/raja.png)] before:bg-[length:128px] before:bg-repeat before:opacity-[5%] before:content-[''] sm:grid sm:h-auto sm:min-h-0 sm:grid-cols-2 sm:grid-rows-1 sm:touch-auto sm:overflow-visible sm:bg-[#1c232d]/85 md:h-96"
+<Section text="Hackathons" href="hackathons" wide>
+  <div
+    class="cabinet relative mb-16 overflow-hidden rounded-3xl px-4 pt-10 pb-6 sm:px-8"
+  >
+    <div
+      class="cabinet-glass pointer-events-none absolute inset-0"
+      aria-hidden="true"
+    >
+    </div>
+    <ul
+      class="shelf relative -mx-4 flex snap-x snap-mandatory items-end gap-4 overflow-x-auto px-[calc(50%-5rem)] pb-2 sm:-mx-8 lg:mx-0 lg:justify-center lg:gap-6 lg:overflow-visible lg:px-0"
+    >
+      {
+        shelf.map((t) => (
+          <li
+            class="trophy-slot flex w-40 shrink-0 snap-center flex-col items-center sm:w-44"
+            data-tier={t.tier}
           >
-            <div class="flex shrink-0 flex-col px-6 pb-6 pt-10 sm:justify-between sm:py-12">
-              <div>
-                <h3 class="mb-2 font-serif text-3xl font-medium text-primary">
-                  {name}
-                </h3>
-                <div class="mb-5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-white/70">
-                  <span>{location}</span>
-                  {rank && <span class="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs text-white">{rank}</span>}
+            <div class="spotlight" aria-hidden="true" />
+            <button
+              type="button"
+              class="trophy-btn grid h-48 w-full place-items-end justify-center"
+              data-trophy={t.index}
+              aria-label={`${t.name}: ${t.rank ?? "participant"}. Open match report`}
+            >
+              <Trophy
+                tier={t.tier}
+                id={`${t.index}`}
+                class:list={["trophy-svg w-auto", TROPHY_HEIGHT[t.tier]]}
+              />
+            </button>
+            <div class="plaque mt-4 flex min-h-[6.5rem] w-full flex-col justify-center rounded-lg px-3 py-2.5 text-center">
+              <p class="font-display text-sm leading-tight font-black tracking-wide text-chalk uppercase">
+                {t.name}
+              </p>
+              <p class="mt-1 font-mono text-[10px] text-muted">{t.location}</p>
+              {t.rank && (
+                <p class="tier-text mt-1.5 font-mono text-[10px] tracking-widest uppercase">
+                  {t.rank}
+                </p>
+              )}
+              <p
+                class="mt-1 font-mono text-[9px] tracking-widest text-chalk/40 uppercase"
+                aria-hidden="true"
+              >
+                Tap trophy · match report
+              </p>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+    <div class="shelf-plank relative mt-2 h-3 rounded-full" aria-hidden="true">
+    </div>
+    <p
+      class="mt-4 text-center font-mono text-[11px] tracking-widest text-muted uppercase lg:hidden"
+      aria-hidden="true"
+    >
+      ← Swipe the shelf →
+    </p>
+  </div>
+
+  <dialog
+    class="report-dialog m-auto w-[min(980px,calc(100vw-2rem))] bg-transparent p-0 text-chalk backdrop:bg-black/75 backdrop:backdrop-blur-sm"
+    aria-label="Match report"
+  >
+    {
+      ranked.map((t) => (
+        <article
+          class="report-card relative overflow-hidden rounded-3xl border bg-pitch"
+          data-report={t.index}
+          data-tier={t.tier}
+          hidden
+        >
+          <header class="report-head flex items-center justify-between gap-4 py-3 pr-14 pl-6 font-mono text-[11px] tracking-[0.25em] uppercase sm:pl-8">
+            <span>Match report</span>
+            <span class="tier-text">{t.rank ?? "Full time"}</span>
+          </header>
+          <div class="grid gap-0 md:grid-cols-[1fr_1.15fr]">
+            <div class="flex flex-col p-6 sm:p-8">
+              <h3 class="font-display text-4xl leading-none font-black text-chalk uppercase sm:text-5xl">
+                {t.name}
+              </h3>
+              <p class="mt-3 flex items-center gap-2 font-mono text-xs text-muted">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  aria-hidden="true"
+                >
+                  <path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z" />
+                  <circle cx="12" cy="10" r="2.5" />
+                </svg>
+                {t.location}
+              </p>
+              <p class="mt-6 text-base text-muted">{t.summary}</p>
+              {(t.link || t.preview) && (
+                <div class="mt-8 flex flex-wrap gap-3">
+                  {t.link && (
+                    <a
+                      href={t.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="btn-kick btn-primary"
+                    >
+                      Project
+                    </a>
+                  )}
+                  {t.preview && (
+                    <a
+                      href={t.preview}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="btn-kick btn-ghost"
+                    >
+                      Preview <span aria-hidden="true">↗</span>
+                    </a>
+                  )}
                 </div>
-                <p class="text-base text-neutral">{summary}</p>
-                {(link || preview) && (
-                  <div class="flex flex-wrap gap-3 pt-6">
-                    {preview && (
-                      <a
-                        href={preview}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-3 text-xs font-medium text-white transition-colors hover:bg-primary/90 active:scale-95"
-                      >
-                        <img src="/external.svg" alt="" class="h-4 w-4 invert" />
-                        Preview
-                      </a>
-                    )}
-                    {link && (
-                      <a
-                        href={link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-3 text-xs font-medium text-white transition-colors hover:bg-primary/90 active:scale-95"
-                      >
-                        Project
-                      </a>
-                    )}
-                  </div>
+              )}
+            </div>
+            <div
+              class="report-gallery relative bg-black/40 p-4 sm:p-6"
+              data-gallery
+            >
+              <div
+                class="relative touch-pan-y overflow-hidden rounded-2xl bg-black/40"
+                data-gallery-stage
+              >
+                <div class="gallery-track flex" data-gallery-track>
+                  {t.images.map((img, i) => (
+                    <Media
+                      class="aspect-[4/3] w-full shrink-0 object-contain select-none"
+                      src={img}
+                      alt={`${t.name} photo ${i + 1} of ${t.images.length}`}
+                      width="736"
+                      height="552"
+                      draggable="false"
+                    />
+                  ))}
+                </div>
+                {t.images.length > 1 && (
+                  <>
+                    <button
+                      type="button"
+                      class="gallery-nav left-3"
+                      data-gallery-step="-1"
+                      aria-label="Previous photo"
+                    >
+                      ‹
+                    </button>
+                    <button
+                      type="button"
+                      class="gallery-nav right-3"
+                      data-gallery-step="1"
+                      aria-label="Next photo"
+                    >
+                      ›
+                    </button>
+                  </>
                 )}
               </div>
-            </div>
-
-            <div class="flex flex-col gap-3 p-4 sm:h-auto sm:items-end sm:justify-end sm:overflow-hidden sm:p-0">
-              {safeImages.length === 1 && (
-                <Image
-                  class="w-full rounded-xl object-contain sm:h-[85%] sm:w-full sm:rounded-ss-xl sm:rounded-ee-2xl sm:object-none sm:object-left-top"
-                  src={safeImages[0]}
-                  alt={name}
-                  width="736"
-                  height="483"
-                />
-              )}
-
-              {safeImages.length > 1 && (
-                <div class="grid w-full grid-cols-1 gap-3 sm:h-full sm:w-full sm:grid-cols-2 sm:gap-3 sm:p-4">
-                  {safeImages.map((img, imgIndex) => (
-                    <div class={imgIndex === 0 && safeImages.length === 3 ? "sm:col-span-2" : "col-span-1"}>
-                      <Image
-                        class="h-auto w-full rounded-xl object-cover"
+              {t.images.length > 1 && (
+                <div class="mt-3 flex gap-2" role="group" aria-label="Photos">
+                  {t.images.map((img, i) => (
+                    <button
+                      type="button"
+                      class="gallery-thumb size-14 overflow-hidden rounded-lg ring-2 ring-transparent sm:size-16"
+                      data-gallery-go={i}
+                      aria-label={`Show photo ${i + 1}`}
+                      aria-current={i === 0 ? "true" : undefined}
+                    >
+                      <Media
+                        class="size-full object-cover"
+                        still
                         src={img}
-                        alt={name}
-                        width="736"
-                        height="483"
+                        alt=""
+                        width="128"
+                        height="128"
                       />
-                    </div>
+                    </button>
                   ))}
                 </div>
               )}
             </div>
           </div>
-        </div>
-      );
-    })
-  }
+        </article>
+      ))
+    }
+    <button
+      type="button"
+      class="absolute top-1 right-2 grid size-9 place-items-center rounded-full text-chalk hover:text-floodlight"
+      aria-label="Close"
+      data-report-close
+    >
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.5"
+        stroke-linecap="round"
+        aria-hidden="true"
+      >
+        <path d="M18 6 6 18M6 6l12 12"></path>
+      </svg>
+    </button>
+  </dialog>
 </Section>
+
+<script>
+  import { lockScroll } from "@lib/motion";
+
+  // On scrollable (mobile) shelves, start centred on the best trophy.
+  const shelf = document.querySelector<HTMLElement>(".shelf");
+  const champion = shelf?.querySelector<HTMLElement>(
+    ".trophy-slot:nth-child(" +
+      Math.ceil((shelf?.children.length ?? 1) / 2) +
+      ")",
+  );
+  if (shelf && champion && shelf.scrollWidth > shelf.clientWidth) {
+    shelf.scrollLeft =
+      champion.offsetLeft - (shelf.clientWidth - champion.offsetWidth) / 2;
+  }
+
+  const dialog = document.querySelector<HTMLDialogElement>(".report-dialog");
+  const reports = dialog?.querySelectorAll<HTMLElement>("[data-report]") ?? [];
+
+  document.querySelectorAll<HTMLElement>("[data-trophy]").forEach((el) => {
+    el.addEventListener("click", () => {
+      if (!dialog) return;
+      reports.forEach(
+        (r) => (r.hidden = r.dataset.report !== el.dataset.trophy),
+      );
+      dialog.showModal();
+      lockScroll(true);
+    });
+  });
+
+  dialog?.addEventListener("close", () => lockScroll(false));
+
+  // Galleries: buttons, thumbnails, arrow keys and swipe.
+  const showPhoto = (gallery: HTMLElement, index: number) => {
+    const track = gallery.querySelector<HTMLElement>("[data-gallery-track]");
+    const count = track?.children.length ?? 0;
+    if (!track || count === 0) return;
+    const next = (index + count) % count;
+    gallery.dataset.index = `${next}`;
+    track.style.transform = `translateX(-${next * 100}%)`;
+    gallery.querySelectorAll("[data-gallery-go]").forEach((thumb, i) => {
+      if (i === next) thumb.setAttribute("aria-current", "true");
+      else thumb.removeAttribute("aria-current");
+    });
+  };
+
+  const stepPhoto = (gallery: HTMLElement, step: number) =>
+    showPhoto(gallery, Number(gallery.dataset.index ?? 0) + step);
+
+  document
+    .querySelectorAll<HTMLElement>("[data-gallery]")
+    .forEach((gallery) => {
+      gallery
+        .querySelectorAll<HTMLElement>("[data-gallery-step]")
+        .forEach((btn) =>
+          btn.addEventListener("click", () =>
+            stepPhoto(gallery, Number(btn.dataset.galleryStep)),
+          ),
+        );
+      gallery
+        .querySelectorAll<HTMLElement>("[data-gallery-go]")
+        .forEach((btn) =>
+          btn.addEventListener("click", () =>
+            showPhoto(gallery, Number(btn.dataset.galleryGo)),
+          ),
+        );
+
+      const stage = gallery.querySelector<HTMLElement>("[data-gallery-stage]");
+      let startX: number | null = null;
+      stage?.addEventListener("pointerdown", (e) => (startX = e.clientX));
+      stage?.addEventListener("pointerup", (e) => {
+        if (startX === null) return;
+        const dx = e.clientX - startX;
+        if (Math.abs(dx) > 40) stepPhoto(gallery, dx < 0 ? 1 : -1);
+        startX = null;
+      });
+    });
+
+  dialog?.addEventListener("keydown", (e) => {
+    if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+    const gallery = dialog.querySelector<HTMLElement>(
+      "[data-report]:not([hidden]) [data-gallery]",
+    );
+    if (gallery) stepPhoto(gallery, e.key === "ArrowRight" ? 1 : -1);
+  });
+  dialog
+    ?.querySelector("[data-report-close]")
+    ?.addEventListener("click", () => dialog.close());
+  dialog?.addEventListener(
+    "click",
+    (e) => e.target === dialog && dialog.close(),
+  );
+</script>
+
+<style>
+  .gallery-track {
+    transition: transform 450ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .gallery-track {
+      transition: none;
+    }
+  }
+
+  .gallery-nav {
+    position: absolute;
+    top: 50%;
+    display: grid;
+    width: 2.5rem;
+    height: 2.5rem;
+    place-items: center;
+    border-radius: 9999px;
+    background: rgb(10 31 23 / 0.85);
+    color: var(--color-chalk);
+    font-size: 1.5rem;
+    line-height: 1;
+    transform: translateY(-50%);
+    transition:
+      color 200ms,
+      background-color 200ms;
+  }
+
+  .gallery-nav:hover {
+    background: var(--color-floodlight);
+    color: var(--color-pitch);
+  }
+
+  .gallery-thumb {
+    opacity: 0.55;
+    transition:
+      opacity 200ms,
+      box-shadow 200ms;
+  }
+
+  .gallery-thumb[aria-current="true"] {
+    opacity: 1;
+    --tw-ring-color: var(--tier);
+  }
+
+  .report-card {
+    --tier: #c8ff3d;
+    border-color: color-mix(in srgb, var(--tier) 40%, transparent);
+  }
+
+  .report-card[data-tier="gold"] {
+    --tier: #ffd75e;
+  }
+  .report-card[data-tier="silver"] {
+    --tier: #dfe6ea;
+  }
+  .report-card[data-tier="bronze"] {
+    --tier: #e7a066;
+  }
+
+  .report-head {
+    background: color-mix(in srgb, var(--tier) 14%, #050c09);
+    color: var(--color-chalk);
+  }
+
+  .report-dialog[open] .report-card:not([hidden]) {
+    animation: report-in 500ms cubic-bezier(0.2, 1.2, 0.4, 1);
+  }
+
+  @keyframes report-in {
+    from {
+      opacity: 0;
+      transform: translateY(40px) scale(0.96);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .report-dialog[open] .report-card:not([hidden]) {
+      animation: none;
+    }
+  }
+
+  .cabinet {
+    background:
+      radial-gradient(
+        80% 60% at 50% 0%,
+        rgb(232 255 190 / 0.08) 0%,
+        transparent 70%
+      ),
+      linear-gradient(180deg, #0f2a20 0%, #08170f 100%);
+    box-shadow:
+      inset 0 0 0 1px rgb(232 239 233 / 0.08),
+      inset 0 -40px 80px rgb(0 0 0 / 0.5),
+      0 40px 80px -40px rgb(0 0 0 / 0.8);
+  }
+
+  .cabinet-glass {
+    background: linear-gradient(
+      115deg,
+      transparent 30%,
+      rgb(255 255 255 / 0.04) 45%,
+      transparent 55%
+    );
+  }
+
+  .shelf {
+    scrollbar-width: none;
+  }
+
+  .trophy-slot {
+    position: relative;
+    --tier: #c8ff3d;
+  }
+
+  .trophy-slot[data-tier="gold"] {
+    --tier: #ffd75e;
+  }
+  .trophy-slot[data-tier="silver"] {
+    --tier: #dfe6ea;
+  }
+  .trophy-slot[data-tier="bronze"] {
+    --tier: #e7a066;
+  }
+
+  .spotlight {
+    position: absolute;
+    top: -2.5rem;
+    left: 50%;
+    width: 160%;
+    height: 18rem;
+    transform: translateX(-50%);
+    background: conic-gradient(
+      from 160deg at 50% 0%,
+      transparent 0deg,
+      rgb(255 255 255 / 0.07) 20deg,
+      transparent 40deg
+    );
+    pointer-events: none;
+  }
+
+  .trophy-btn :global(.trophy-svg) {
+    filter: drop-shadow(0 14px 18px rgb(0 0 0 / 0.6));
+    transition:
+      transform 400ms cubic-bezier(0.3, 1.5, 0.5, 1),
+      filter 300ms;
+  }
+
+  .trophy-btn:hover :global(.trophy-svg),
+  .trophy-btn:focus-visible :global(.trophy-svg) {
+    transform: translateY(-8px) scale(1.05);
+    filter: drop-shadow(
+        0 0 22px color-mix(in srgb, var(--tier) 55%, transparent)
+      )
+      drop-shadow(0 20px 18px rgb(0 0 0 / 0.6));
+  }
+
+  .plaque {
+    background: linear-gradient(180deg, #1c2a24, #111c17);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.06),
+      0 6px 14px -6px rgb(0 0 0 / 0.8);
+  }
+
+  .spotlight {
+    transition: opacity 300ms;
+    opacity: 0.7;
+  }
+
+  .trophy-slot:has(.trophy-btn:hover) .spotlight,
+  .trophy-slot:has(.trophy-btn:focus-visible) .spotlight {
+    opacity: 1;
+    filter: brightness(1.8);
+  }
+
+  .plaque {
+    border-top: 2px solid transparent;
+    transition:
+      border-color 300ms,
+      box-shadow 300ms;
+  }
+
+  .trophy-slot:has(.trophy-btn:hover) .plaque,
+  .trophy-slot:has(.trophy-btn:focus-visible) .plaque {
+    border-top-color: var(--tier);
+    box-shadow:
+      0 -8px 30px -10px color-mix(in srgb, var(--tier) 60%, transparent),
+      0 6px 14px -6px rgb(0 0 0 / 0.8);
+  }
+
+  .tier-text {
+    color: var(--tier);
+  }
+
+  .shelf-plank {
+    background: linear-gradient(
+      180deg,
+      rgb(232 239 233 / 0.25),
+      rgb(232 239 233 / 0.05)
+    );
+    box-shadow: 0 10px 30px rgb(200 255 61 / 0.08);
+  }
+</style>

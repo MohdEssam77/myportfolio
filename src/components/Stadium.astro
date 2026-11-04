@@ -1,0 +1,79 @@
+---
+// Fixed background layers: mowed pitch, floodlights and film grain.
+const lights = ["tl", "tr", "bl", "br"];
+---
+
+<div aria-hidden="true" class="stadium pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+  <div class="stadium-pitch absolute inset-0"></div>
+  {lights.map((pos) => <div class={`floodlight floodlight-${pos}`}></div>)}
+  <div class="stadium-grain absolute inset-0"></div>
+</div>
+
+<script>
+  // Flare the floodlights briefly whenever a new match phase starts.
+  const stadium = document.querySelector<HTMLElement>(".stadium");
+  document.addEventListener("matchday:phase", () => {
+    if (!stadium) return;
+    stadium.classList.remove("flare");
+    void stadium.offsetWidth;
+    stadium.classList.add("flare");
+  });
+</script>
+
+<style>
+  .floodlight {
+    position: absolute;
+    width: 70vmax;
+    height: 70vmax;
+    border-radius: 50%;
+    background: radial-gradient(
+      circle,
+      rgb(232 255 190 / 0.13) 0%,
+      rgb(200 255 61 / 0.05) 35%,
+      transparent 65%
+    );
+    transition: opacity 900ms ease;
+  }
+  .floodlight-tl { top: -35vmax; left: -35vmax; }
+  .floodlight-tr { top: -35vmax; right: -35vmax; }
+  .floodlight-bl { bottom: -45vmax; left: -40vmax; opacity: 0.6; }
+  .floodlight-br { bottom: -45vmax; right: -40vmax; opacity: 0.6; }
+
+  :global(html[data-lights="off"]) .floodlight {
+    opacity: 0;
+    transition: none;
+  }
+
+  .stadium.flare .floodlight {
+    animation: flare 1.2s ease-out;
+  }
+
+  @keyframes flare {
+    20% { filter: brightness(1.8); }
+    100% { filter: brightness(1); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .stadium.flare .floodlight { animation: none; }
+  }
+</style>
+
+<style>
+  .stadium-pitch {
+    background:
+      repeating-linear-gradient(
+        180deg,
+        rgb(255 255 255 / 0.022) 0 140px,
+        transparent 140px 280px
+      ),
+      radial-gradient(ellipse 80% 60% at 50% 0%, var(--color-turf) 0%, transparent 70%),
+      radial-gradient(ellipse 60% 50% at 50% 110%, var(--color-turf) 0%, transparent 70%),
+      var(--color-pitch);
+  }
+
+  .stadium-grain {
+    opacity: 0.07;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+</style>
