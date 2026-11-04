@@ -38,3 +38,23 @@ export const scrollToTarget = (target: string | HTMLElement) => {
   if (lenis) lenis.scrollTo(el, { offset: -96 });
   else el.scrollIntoView({ behavior: prefersReducedMotion() ? "auto" : "smooth" });
 };
+
+// Adds `is-in` to [data-reveal] elements once they scroll into view.
+export const initReveal = () => {
+  const items = document.querySelectorAll<HTMLElement>("[data-reveal]:not(.is-in)");
+  if (prefersReducedMotion() || !("IntersectionObserver" in window)) {
+    items.forEach((el) => el.classList.add("is-in"));
+    return;
+  }
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add("is-in");
+        observer.unobserve(entry.target);
+      });
+    },
+    { rootMargin: "0px 0px -10% 0px" },
+  );
+  items.forEach((el) => observer.observe(el));
+};
