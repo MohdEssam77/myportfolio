@@ -75,6 +75,7 @@ const data = {
 
 <script>
   import { lockScroll, scrollToTarget } from "@lib/motion";
+  import { playKickoff } from "@lib/kickoff";
 
   const dialog = document.querySelector<HTMLDialogElement>(".var-terminal");
   const log = document.querySelector<HTMLOListElement>("[data-term-log]");
@@ -111,6 +112,7 @@ const data = {
   } = JSON.parse(dialog?.dataset.term ?? "{}");
 
   type Command = { help: string; run: (args: string[]) => void };
+  const hidden: Record<string, () => void> = {};
 
   const listings: Record<string, string[]> = {
     projects: data.projects,
@@ -154,15 +156,71 @@ const data = {
         scrollToTarget(href);
       },
     },
+    cv: {
+      help: "download the resume",
+      run: () => {
+        print({
+          text: "→ downloading Mohammed_Halboup_Resume.pdf",
+          tone: "accent",
+        });
+        const a = document.createElement("a");
+        a.href = "/Halboup_Mohammed.pdf";
+        a.download = "Mohammed_Halboup_Resume.pdf";
+        a.click();
+      },
+    },
+    contact: {
+      help: "open the transfer desk",
+      run: () => {
+        dialog?.close();
+        scrollToTarget("#contact");
+        setTimeout(
+          () =>
+            document
+              .querySelector<HTMLInputElement>("#firstName")
+              ?.focus({ preventScroll: true }),
+          600,
+        );
+      },
+    },
+    kickoff: {
+      help: "replay the floodlights intro",
+      run: () => {
+        dialog?.close();
+        scrollToTarget("#hero");
+        playKickoff();
+      },
+    },
+    penalty: {
+      help: "take a penalty",
+      run: () => {
+        dialog?.close();
+        document.dispatchEvent(new CustomEvent("matchday:penalty"));
+      },
+    },
     clear: { help: "clear the screen", run: () => log?.replaceChildren() },
+    exit: { help: "close the terminal", run: () => dialog?.close() },
   };
+
+  // Hidden extras, not listed in `help`.
+  const easterEggs: Record<string, string> = {
+    sudo: "Nice try. The referee's decision is final.",
+    var: "Checking… checking… the goal stands. ✔",
+    offside: "Not offside. He was level with the last defender.",
+  };
+
+  Object.entries(easterEggs).forEach(([name, text]) => {
+    hidden[name] = () => print({ text, tone: "accent" });
+  });
 
   const run = (raw: string) => {
     print({ text: `${promptText} ${raw}`, tone: "muted" });
     const [cmd, ...args] = raw.trim().split(/\s+/);
     if (!cmd) return;
-    const command = commands[cmd.toLowerCase()];
+    const name = cmd.toLowerCase();
+    const command = commands[name];
     if (command) command.run(args);
+    else if (hidden[name]) hidden[name]();
     else
       print({
         text: `command not found: ${cmd} — try \`help\``,
