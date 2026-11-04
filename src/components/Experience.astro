@@ -18,6 +18,19 @@ const markers = experience.map((role, i) => {
   const x = i === 0 ? 50 : step % 2 === 0 ? 30 : 70;
   return { x, y, number: step + 1, id: `role-${i}`, label: `'${year(role.startDate)}`, company: role.company };
 });
+
+// Passing line from the oldest role to the latest, in the board's 400x600 space.
+const points = [...markers].reverse().map((m) => ({ x: m.x * 4, y: m.y * 6 }));
+const passPath = points
+  .map((p, i) => {
+    if (i === 0) return `M${p.x} ${p.y}`;
+    const prev = points[i - 1];
+    // Bend each pass slightly outwards so it reads as a curled ball.
+    const cx = (prev.x + p.x) / 2 + (p.x > prev.x ? -40 : 40);
+    const cy = (prev.y + p.y) / 2;
+    return `Q${cx} ${cy} ${p.x} ${p.y}`;
+  })
+  .join(" ");
 ---
 
 <Section text="Work Experience" href="experience" wide>
@@ -51,6 +64,28 @@ const markers = experience.map((role, i) => {
             <path d="M160 490a50 50 0 0 1 80 0"></path>
             <path d="M10 22a12 12 0 0 0 12-12M378 10a12 12 0 0 0 12 12M10 578a12 12 0 0 1 12 12M378 590a12 12 0 0 1 12-12"></path>
           </g>
+        </svg>
+
+        <svg
+          class="pass-lines absolute inset-4 size-[calc(100%-2rem)] overflow-visible"
+          viewBox="0 0 400 600"
+          fill="none"
+          aria-hidden="true"
+        >
+          <defs>
+            <mask id="pass-mask" maskUnits="userSpaceOnUse">
+              <path class="pass-reveal" d={passPath} stroke="#fff" stroke-width="10" stroke-linecap="round"></path>
+            </mask>
+          </defs>
+          <path
+            d={passPath}
+            mask="url(#pass-mask)"
+            stroke="var(--color-floodlight)"
+            stroke-width="3"
+            stroke-dasharray="2 12"
+            stroke-linecap="round"
+          ></path>
+          <circle class="pass-ball" r="7" fill="#f4f7f4" stroke="#0a1f17" stroke-width="2" opacity="0"></circle>
         </svg>
 
         <ol class="absolute inset-4">
@@ -105,6 +140,8 @@ const markers = experience.map((role, i) => {
 </Section>
 
 <script>
+  import { getGsap, prefersReducedMotion } from "@lib/motion";
+
   // Light up the marker of the role panel currently in the middle of the screen.
   const markers = document.querySelectorAll<HTMLElement>("[data-marker]");
   const panels = document.querySelectorAll<HTMLElement>("[data-panel]");
@@ -121,6 +158,36 @@ const markers = experience.map((role, i) => {
     { rootMargin: "-45% 0px -45% 0px" },
   );
   panels.forEach((p) => observer.observe(p));
+
+  // Draw the passing line (and run the ball along it) when the board comes into view.
+  const reveal = document.querySelector<SVGPathElement>(".pass-reveal");
+  const ball = document.querySelector<SVGCircleElement>(".pass-ball");
+
+  if (reveal && ball) {
+    const length = reveal.getTotalLength();
+    reveal.style.strokeDasharray = `${length}`;
+
+    if (prefersReducedMotion()) {
+      reveal.style.strokeDashoffset = "0";
+    } else {
+      const { gsap } = getGsap();
+      const progress = { t: 0 };
+      reveal.style.strokeDashoffset = `${length}`;
+      gsap.to(progress, {
+        t: 1,
+        duration: 2.4,
+        ease: "power2.inOut",
+        scrollTrigger: { trigger: ".tactics-board", start: "top 70%" },
+        onStart: () => ball.setAttribute("opacity", "1"),
+        onUpdate: () => {
+          reveal.style.strokeDashoffset = `${length * (1 - progress.t)}`;
+          const p = reveal.getPointAtLength(length * progress.t);
+          ball.setAttribute("cx", `${p.x}`);
+          ball.setAttribute("cy", `${p.y}`);
+        },
+      });
+    }
+  }
 </script>
 
 <style>
