@@ -85,6 +85,16 @@ const phases = navLinks.map((link) => ({
           ))
         }
         <li class="mt-2 sm:mt-0 sm:ml-1">
+          <button
+            type="button"
+            class="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 font-mono text-xs text-muted ring-1 ring-chalk/15 transition-colors hover:text-floodlight hover:ring-floodlight/50"
+            aria-label="Open VAR terminal"
+            data-open-terminal
+          >
+            <kbd class="rounded bg-chalk/10 px-1.5 text-chalk">/</kbd> VAR
+          </button>
+        </li>
+        <li class="mt-2 sm:mt-0">
           <a
             class="inline-flex items-center gap-2 rounded-lg bg-floodlight px-3.5 py-2 text-sm font-semibold text-pitch transition-transform hover:-translate-y-0.5"
             href="/Halboup_Mohammed.pdf"
@@ -125,6 +135,10 @@ const phases = navLinks.map((link) => ({
   };
 
   button?.addEventListener("click", () => setMenu(!menu?.hasAttribute("data-open")));
+  document.querySelector("[data-open-terminal]")?.addEventListener("click", () => {
+    setMenu(false);
+    document.dispatchEvent(new CustomEvent("matchday:terminal"));
+  });
   navItems.forEach((item) => item.addEventListener("click", () => setMenu(false)));
   document.addEventListener("keydown", (e) => e.key === "Escape" && setMenu(false));
   document.addEventListener("click", (e) => {

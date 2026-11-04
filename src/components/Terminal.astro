@@ -260,6 +260,30 @@ const data = {
       );
       input.value = history[historyIndex] ?? "";
     }
+
+    if (e.key === "Tab") {
+      e.preventDefault();
+      const [cmd = "", arg, ...rest] = input.value.trimStart().split(/\s+/);
+      if (rest.length) return;
+      const options =
+        arg === undefined
+          ? Object.keys(commands)
+          : cmd === "ls"
+            ? Object.keys(listings)
+            : cmd === "goto"
+              ? Object.keys(data.sections)
+              : [];
+      const partial = arg ?? cmd;
+      const matches = options.filter((o) =>
+        o.startsWith(partial.toLowerCase()),
+      );
+      if (matches.length === 1) {
+        input.value =
+          arg === undefined ? `${matches[0]} ` : `${cmd} ${matches[0]}`;
+      } else if (matches.length > 1) {
+        print({ text: matches.join("  "), tone: "muted" });
+      }
+    }
   });
 
   dialog?.addEventListener("close", () => lockScroll(false));
