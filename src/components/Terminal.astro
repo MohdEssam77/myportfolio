@@ -1,10 +1,35 @@
 ---
-import { PLAYER } from "@ui";
+import { SITE_CONFIG, SITE_CONTENT } from "@config";
+import { PLAYER, squadNumber } from "@ui";
 
-const prompt = `${PLAYER.uniShort.toLowerCase()}@matchday:~$`;
+const { hero, projects, hackathons, experience } = SITE_CONTENT;
+const prompt = `${hero.name.split(" ")[0].toLowerCase()}@${PLAYER.uniShort.toLowerCase()}:~$`;
+
+// Everything the terminal prints comes from the site content.
+const data = {
+  whoami: [
+    `${hero.name} · #${PLAYER.number}`,
+    hero.specialty,
+    hero.summary,
+    `CS @ ${PLAYER.uni} · ${PLAYER.club}`,
+  ],
+  projects: projects.map(
+    (p, i) => `#${String(squadNumber(i)).padEnd(3)} ${p.name}`,
+  ),
+  hackathons: hackathons.map(
+    (h) => `${(h.rank ?? "—").padEnd(20)} ${h.name} · ${h.location}`,
+  ),
+  experience: experience.map(
+    (e) => `${e.startDate.trim()} — ${e.endDate}  ${e.position} @ ${e.company}`,
+  ),
+  sections: Object.fromEntries(
+    SITE_CONFIG.navLinks.map((l) => [l.text.toLowerCase(), l.href]),
+  ),
+};
 ---
 
 <dialog
+  data-term={JSON.stringify(data)}
   class="var-terminal mx-auto mt-[12vh] w-[min(720px,calc(100vw-2rem))] bg-transparent p-0 text-chalk backdrop:bg-black/60 backdrop:backdrop-blur-[2px]"
   aria-label="VAR terminal"
 >
@@ -49,7 +74,7 @@ const prompt = `${PLAYER.uniShort.toLowerCase()}@matchday:~$`;
 </dialog>
 
 <script>
-  import { lockScroll } from "@lib/motion";
+  import { lockScroll, scrollToTarget } from "@lib/motion";
 
   const dialog = document.querySelector<HTMLDialogElement>(".var-terminal");
   const log = document.querySelector<HTMLOListElement>("[data-term-log]");
@@ -77,11 +102,72 @@ const prompt = `${PLAYER.uniShort.toLowerCase()}@matchday:~$`;
   const history: string[] = [];
   let historyIndex = 0;
 
+  const data: {
+    whoami: string[];
+    projects: string[];
+    hackathons: string[];
+    experience: string[];
+    sections: Record<string, string>;
+  } = JSON.parse(dialog?.dataset.term ?? "{}");
+
+  type Command = { help: string; run: (args: string[]) => void };
+
+  const listings: Record<string, string[]> = {
+    projects: data.projects,
+    hackathons: data.hackathons,
+    experience: data.experience,
+  };
+
+  const commands: Record<string, Command> = {
+    help: {
+      help: "list available commands",
+      run: () =>
+        print(
+          ...Object.entries(commands).map(
+            ([name, c]) => `  ${name.padEnd(12)} ${c.help}`,
+          ),
+          { text: "  tip: ↑/↓ for history", tone: "muted" },
+        ),
+    },
+    whoami: { help: "who's wearing #17", run: () => print(...data.whoami) },
+    ls: {
+      help: "ls projects | hackathons | experience",
+      run: ([what]) => {
+        const list = listings[what ?? ""];
+        if (list) print(...list);
+        else print(...Object.keys(listings).map((k) => `${k}/`));
+      },
+    },
+    goto: {
+      help: `goto ${Object.keys(data.sections).join(" | ")}`,
+      run: ([where]) => {
+        const href = data.sections[where?.toLowerCase() ?? ""];
+        if (!href) {
+          print({
+            text: `goto: unknown section "${where ?? ""}"`,
+            tone: "error",
+          });
+          return;
+        }
+        print({ text: `→ moving to ${where}`, tone: "accent" });
+        dialog?.close();
+        scrollToTarget(href);
+      },
+    },
+    clear: { help: "clear the screen", run: () => log?.replaceChildren() },
+  };
+
   const run = (raw: string) => {
     print({ text: `${promptText} ${raw}`, tone: "muted" });
-    const [cmd] = raw.trim().split(/\s+/);
+    const [cmd, ...args] = raw.trim().split(/\s+/);
     if (!cmd) return;
-    print({ text: `command not found: ${cmd}`, tone: "error" });
+    const command = commands[cmd.toLowerCase()];
+    if (command) command.run(args);
+    else
+      print({
+        text: `command not found: ${cmd} — try \`help\``,
+        tone: "error",
+      });
   };
 
   const open = () => {
