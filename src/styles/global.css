@@ -3,11 +3,25 @@
 @theme {
   --font-sans: "Be Vietnam Pro", system-ui, sans-serif;
   --font-serif: "Gabarito Variable", ui-serif, serif;
+  --font-display: "Big Shoulders Display", "Gabarito Variable", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
 
-  --color-primary: #2563eb;
-  --color-neutral: #94a3b8;
-  --color-white: #e2e8f0;
-  --color-black: #0e141b;
+  /* Matchday palette */
+  --color-pitch: #0a1f17;
+  --color-turf: #12382a;
+  --color-turf-light: #1b4a38;
+  --color-chalk: #e8efe9;
+  --color-floodlight: #c8ff3d;
+  --color-led: #ffb020;
+  --color-muted: #8aa597;
+  --color-card-red: #ff3b3b;
+  --color-card-yellow: #ffd60a;
+
+  /* Legacy aliases so existing classes keep working during migration */
+  --color-primary: var(--color-floodlight);
+  --color-neutral: var(--color-muted);
+  --color-white: var(--color-chalk);
+  --color-black: var(--color-pitch);
 
   --text-xs: 0.875rem;
   --text-xs--line-height: 1.125rem;
