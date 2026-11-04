@@ -12,15 +12,24 @@ const { experience } = Astro.props;
 // the latest one is up front near the opponent's goal (top).
 const count = experience.length;
 const year = (date: string) => date.match(/\d{4}/)?.[0]?.slice(2) ?? "";
+const startTime = (date: string) => {
+  const parsed = Date.parse(`1 ${date.replace(",", "")}`);
+  return Number.isNaN(parsed) ? 0 : parsed;
+};
+// Chronological rank by start date; the content order is left untouched.
+const ranks = experience
+  .map((role, i) => ({ i, t: startTime(role.startDate) }))
+  .sort((a, b) => a.t - b.t)
+  .reduce<number[]>((acc, { i }, rank) => ((acc[i] = rank), acc), []);
 const markers = experience.map((role, i) => {
-  const step = count - 1 - i;
+  const step = ranks[i];
   const y = count === 1 ? 50 : 84 - (step * 66) / (count - 1);
-  const x = i === 0 ? 50 : step % 2 === 0 ? 30 : 70;
+  const x = step === count - 1 ? 50 : step % 2 === 0 ? 30 : 70;
   return { x, y, number: step + 1, id: `role-${i}`, label: `'${year(role.startDate)}`, company: role.company };
 });
 
 // Passing line from the oldest role to the latest, in the board's 400x600 space.
-const points = [...markers].reverse().map((m) => ({ x: m.x * 4, y: m.y * 6 }));
+const points = [...markers].sort((a, b) => a.number - b.number).map((m) => ({ x: m.x * 4, y: m.y * 6 }));
 const passPath = points
   .map((p, i) => {
     if (i === 0) return `M${p.x} ${p.y}`;
