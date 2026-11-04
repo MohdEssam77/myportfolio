@@ -41,7 +41,7 @@ ranked.forEach((t, i) => (i % 2 === 0 ? shelf.push(t) : shelf.unshift(t)));
     >
     </div>
     <ul
-      class="shelf relative flex snap-x snap-mandatory items-end gap-4 overflow-x-auto pb-2 sm:justify-center sm:gap-6 sm:overflow-visible"
+      class="shelf relative -mx-4 flex snap-x snap-mandatory items-end gap-4 overflow-x-auto px-[calc(50%-5rem)] pb-2 sm:-mx-8 lg:mx-0 lg:justify-center lg:gap-6 lg:overflow-visible lg:px-0"
     >
       {
         shelf.map((t) => (
@@ -85,6 +85,12 @@ ranked.forEach((t, i) => (i % 2 === 0 ? shelf.push(t) : shelf.unshift(t)));
     </ul>
     <div class="shelf-plank relative mt-2 h-3 rounded-full" aria-hidden="true">
     </div>
+    <p
+      class="mt-4 text-center font-mono text-[11px] tracking-widest text-muted uppercase lg:hidden"
+      aria-hidden="true"
+    >
+      ← Swipe the shelf →
+    </p>
   </div>
 
   <dialog
@@ -240,6 +246,18 @@ ranked.forEach((t, i) => (i % 2 === 0 ? shelf.push(t) : shelf.unshift(t)));
 
 <script>
   import { lockScroll } from "@lib/motion";
+
+  // On scrollable (mobile) shelves, start centred on the best trophy.
+  const shelf = document.querySelector<HTMLElement>(".shelf");
+  const champion = shelf?.querySelector<HTMLElement>(
+    ".trophy-slot:nth-child(" +
+      Math.ceil((shelf?.children.length ?? 1) / 2) +
+      ")",
+  );
+  if (shelf && champion && shelf.scrollWidth > shelf.clientWidth) {
+    shelf.scrollLeft =
+      champion.offsetLeft - (shelf.clientWidth - champion.offsetWidth) / 2;
+  }
 
   const dialog = document.querySelector<HTMLDialogElement>(".report-dialog");
   const reports = dialog?.querySelectorAll<HTMLElement>("[data-report]") ?? [];
