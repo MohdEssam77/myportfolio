@@ -190,7 +190,7 @@ const passPath = points
 </Section>
 
 <script>
-  import { getGsap, prefersReducedMotion } from "@lib/motion";
+  import { prefersReducedMotion, tween } from "@lib/motion";
 
   // Light up the marker of the role panel currently in the middle of the screen.
   const markers = document.querySelectorAll<HTMLElement>("[data-marker]");
@@ -220,22 +220,23 @@ const passPath = points
     if (prefersReducedMotion()) {
       reveal.style.strokeDashoffset = "0";
     } else {
-      const { gsap } = getGsap();
-      const progress = { t: 0 };
       reveal.style.strokeDashoffset = `${length}`;
-      gsap.to(progress, {
-        t: 1,
-        duration: 2.4,
-        ease: "power2.inOut",
-        scrollTrigger: { trigger: ".tactics-board", start: "top 70%" },
-        onStart: () => ball.setAttribute("opacity", "1"),
-        onUpdate: () => {
-          reveal.style.strokeDashoffset = `${length * (1 - progress.t)}`;
-          const p = reveal.getPointAtLength(length * progress.t);
-          ball.setAttribute("cx", `${p.x}`);
-          ball.setAttribute("cy", `${p.y}`);
+      const board = document.querySelector(".tactics-board");
+      const boardObserver = new IntersectionObserver(
+        ([entry]) => {
+          if (!entry.isIntersecting) return;
+          boardObserver.disconnect();
+          ball.setAttribute("opacity", "1");
+          tween(2400, (t) => {
+            reveal.style.strokeDashoffset = `${length * (1 - t)}`;
+            const p = reveal.getPointAtLength(length * t);
+            ball.setAttribute("cx", `${p.x}`);
+            ball.setAttribute("cy", `${p.y}`);
+          });
         },
-      });
+        { rootMargin: "0px 0px -30% 0px" },
+      );
+      if (board) boardObserver.observe(board);
     }
   }
 </script>

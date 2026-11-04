@@ -1,34 +1,29 @@
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
 
 export const prefersReducedMotion = () =>
   window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-let registered = false;
-
-// Registers GSAP plugins once. Safe to call from every island.
-export const getGsap = () => {
-  if (!registered) {
-    gsap.registerPlugin(ScrollTrigger);
-    registered = true;
-  }
-  return { gsap, ScrollTrigger };
+// Runs `onFrame` with eased progress 0..1 over `duration` ms.
+export const tween = (duration: number, onFrame: (t: number) => void) => {
+  const start = performance.now();
+  const easeInOut = (t: number) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
+  const step = (now: number) => {
+    const t = Math.min(1, (now - start) / duration);
+    onFrame(easeInOut(t));
+    if (t < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
 };
 
 let lenis: Lenis | null = null;
 
-// Smooth scrolling synced with ScrollTrigger. Skipped for reduced motion
-// and coarse pointers, where native scrolling feels better.
+// Smooth scrolling. Skipped for reduced motion and coarse pointers, where
+// native scrolling feels better.
 export const initSmoothScroll = () => {
   if (lenis || prefersReducedMotion() || window.matchMedia("(pointer: coarse)").matches) {
     return lenis;
   }
-  const { gsap, ScrollTrigger } = getGsap();
-  lenis = new Lenis({ anchors: { offset: -96 } });
-  lenis.on("scroll", ScrollTrigger.update);
-  gsap.ticker.add((time) => lenis?.raf(time * 1000));
-  gsap.ticker.lagSmoothing(0);
+  lenis = new Lenis({ anchors: { offset: -96 }, autoRaf: true });
   return lenis;
 };
 
