@@ -1,29 +1,70 @@
 ---
 import type { SiteConfig } from "@types";
+import { PLAYER } from "@ui";
 
 type Props = Pick<SiteConfig, "author" | "socialLinks">;
 
 const { author, socialLinks } = Astro.props;
 const currentYear = new Date().getFullYear();
+const lastName = author.split(" ").slice(1).join(" ");
 ---
 
-<footer
-  class="w-full border-t border-neutral/20 px-5 pt-5 pb-8 text-center text-white"
->
-  <ul class="mb-5 flex flex-wrap justify-center gap-x-5 text-xs">
-    {
-      socialLinks.map(({ text, href }) => (
-        <li>
-          <a
-            href={href}
-            target="_blank"
-            class="inline-block px-4 py-3 after:relative after:bottom-[-4px] after:content-[url(/external.svg)] hover:text-primary"
-          >
-            {text}
-          </a>
-        </li>
-      ))
-    }
-  </ul>
-  <p class="text-xs">{author} © {currentYear}</p>
+<footer class="mt-10 w-full px-4 pt-10 pb-10 text-chalk sm:px-6">
+  <div class="full-time mx-auto max-w-3xl rounded-3xl px-6 py-8 text-center sm:px-10">
+    <p class="mb-5 inline-flex items-center gap-2 rounded bg-chalk/10 px-3 py-1 font-mono text-[11px] tracking-[0.25em] text-muted uppercase">
+      Full time · 90+2'
+    </p>
+
+    <div class="mb-8 flex items-center justify-center gap-3 font-display font-black tracking-wide uppercase sm:gap-5">
+      <span class="text-2xl sm:text-4xl">{lastName}</span>
+      <span class="ft-led flex items-center gap-2 rounded-lg px-3 py-1.5 text-3xl text-led sm:text-5xl">
+        <span data-final-score>6</span><span class="text-led/50">–</span><span>0</span>
+      </span>
+      <span class="text-2xl text-muted sm:text-4xl">
+        <span class="sm:hidden">BOR</span><span class="hidden sm:inline">{PLAYER.rival}</span>
+      </span>
+    </div>
+
+    <ul class="mb-6 flex flex-wrap justify-center gap-3 font-mono text-xs">
+      {
+        socialLinks.map(({ text, href }) => (
+          <li>
+            <a
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-2 rounded-full px-5 py-2.5 ring-1 ring-chalk/20 transition-colors hover:text-floodlight hover:ring-floodlight"
+            >
+              {text} <span aria-hidden="true">↗</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+
+    <p class="font-mono text-[11px] text-muted">{author} © {currentYear}</p>
+  </div>
 </footer>
+
+<script>
+  // Final score = every match phase reached (hero is kick-off, so it doesn't count).
+  const final = document.querySelector<HTMLElement>("[data-final-score]");
+  const phases = document.querySelectorAll("main section[id]").length;
+  if (final && phases) final.textContent = `${phases - 1}`;
+</script>
+
+<style>
+  .full-time {
+    background: linear-gradient(180deg, #0f2a20, #08170f);
+    box-shadow: inset 0 0 0 1px rgb(232 239 233 / 0.08);
+  }
+
+  .ft-led {
+    background:
+      radial-gradient(circle, rgb(0 0 0 / 0.55) 1px, transparent 1.4px) 0 0 / 3px 3px,
+      #050c09;
+    box-shadow: inset 0 0 0 1px rgb(255 176 32 / 0.15);
+    text-shadow: 0 0 10px rgb(255 176 32 / 0.7);
+    font-variant-numeric: tabular-nums;
+  }
+</style>
