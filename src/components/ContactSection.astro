@@ -147,6 +147,20 @@ const fields: {
       0 40px 80px -40px rgb(0 0 0 / 0.8);
   }
 
+  [data-submit].is-pending {
+    cursor: progress;
+    opacity: 0.85;
+  }
+
+  [data-submit].is-pending svg {
+    animation: whistle 500ms ease-in-out infinite alternate;
+  }
+
+  @keyframes whistle {
+    from { transform: translateX(-2px) rotate(-12deg); }
+    to { transform: translateX(2px) rotate(12deg); }
+  }
+
   .contract-input {
     border: 0;
     border-bottom: 1.5px dashed rgb(232 239 233 / 0.25);
@@ -186,10 +200,20 @@ const fields: {
 <script>
   const form = document.getElementById("contact-form") as HTMLFormElement;
   const result = document.getElementById("form-result") as HTMLDivElement;
+  const submit = form.querySelector<HTMLButtonElement>("[data-submit]");
+  const submitLabel = form.querySelector<HTMLElement>("[data-submit-label]");
+
+  const setPending = (pending: boolean) => {
+    if (!submit || !submitLabel) return;
+    submit.disabled = pending;
+    submit.classList.toggle("is-pending", pending);
+    submitLabel.textContent = pending ? "Whistle blown…" : "Send Offer";
+  };
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     const formData = new FormData(form);
+    setPending(true);
 
     try {
       const response = await fetch(form.action, {
@@ -201,20 +225,20 @@ const fields: {
 
       if (data.success) {
         result.className = "mt-4 text-sm text-green-400";
-        result.textContent =
-          "Thank you! Your message has been sent successfully.";
+        result.textContent = "Thank you! Your message has been sent successfully.";
         result.classList.remove("hidden");
         form.reset();
       } else {
         result.className = "mt-4 text-sm text-red-400";
-        result.textContent =
-          data.message || "Something went wrong. Please try again.";
+        result.textContent = data.message || "Something went wrong. Please try again.";
         result.classList.remove("hidden");
       }
     } catch {
       result.className = "mt-4 text-sm text-red-400";
       result.textContent = "Something went wrong. Please try again.";
       result.classList.remove("hidden");
+    } finally {
+      setPending(false);
     }
   });
 </script>
