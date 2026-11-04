@@ -79,6 +79,13 @@ const lastName = rest.join(" ");
 <script>
   import { autoKickoff } from "@lib/kickoff";
   autoKickoff();
+
+  // The scroll cue only belongs to the kick-off screen: hide it as soon as
+  // the visitor starts scrolling, bring it back only at the very top.
+  const cue = document.querySelector<HTMLElement>(".scroll-cue");
+  const syncCue = () => cue?.classList.toggle("is-gone", window.scrollY > 40);
+  syncCue();
+  window.addEventListener("scroll", syncCue, { passive: true });
 </script>
 
 <style>
@@ -122,6 +129,15 @@ const lastName = rest.join(" ");
   @keyframes roll {
     0%, 100% { transform: translateX(0) rotate(0deg); }
     50% { transform: translateX(74px) rotate(385deg); }
+  }
+
+  .scroll-cue {
+    transition: opacity 300ms ease, visibility 300ms;
+  }
+
+  .scroll-cue.is-gone {
+    opacity: 0;
+    visibility: hidden;
   }
 
   @media (prefers-reduced-motion: reduce) {
