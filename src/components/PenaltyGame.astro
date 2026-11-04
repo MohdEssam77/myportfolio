@@ -1,0 +1,251 @@
+---
+import Ball from "@icons/Ball.astro";
+
+const zones = [
+  "Top left",
+  "Top centre",
+  "Top right",
+  "Bottom left",
+  "Bottom centre",
+  "Bottom right",
+];
+---
+
+<dialog
+  class="penalty-dialog m-auto w-[min(640px,calc(100vw-2rem))] bg-transparent p-0 text-chalk backdrop:bg-black/80 backdrop:backdrop-blur-sm"
+  aria-label="Penalty shootout"
+>
+  <div class="rounded-3xl border border-floodlight/30 bg-pitch p-5 sm:p-6">
+    <header class="mb-4 flex items-center justify-between gap-4">
+      <div>
+        <p class="font-display text-2xl leading-none font-black uppercase">
+          Penalty shootout
+        </p>
+        <p class="mt-1 font-mono text-[11px] text-muted">
+          5 shots · best <span class="text-floodlight" data-pk-best>0</span>/5
+        </p>
+      </div>
+      <button
+        type="button"
+        class="grid size-9 place-items-center rounded-full text-chalk hover:text-floodlight"
+        aria-label="Close"
+        data-pk-close
+      >
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+          stroke-linecap="round"
+          aria-hidden="true"
+        >
+          <path d="M18 6 6 18M6 6l12 12"></path>
+        </svg>
+      </button>
+    </header>
+
+    <ol class="mb-4 flex gap-2" aria-label="Shots" data-pk-shots>
+      {
+        Array.from({ length: 5 }, () => (
+          <li class="pk-dot size-4 rounded-full ring-2 ring-chalk/30" />
+        ))
+      }
+    </ol>
+
+    <div
+      class="pk-stage relative aspect-[16/10] overflow-hidden rounded-2xl"
+      data-pk-stage
+    >
+      <svg
+        class="absolute inset-0 size-full"
+        viewBox="0 0 640 400"
+        preserveAspectRatio="none"
+        aria-hidden="true"
+      >
+        <defs>
+          <pattern
+            id="pk-net"
+            width="16"
+            height="16"
+            patternUnits="userSpaceOnUse"
+          >
+            <path
+              d="M0 0L16 16M16 0L0 16"
+              stroke="rgb(232 239 233 / 0.18)"
+              stroke-width="1"></path>
+          </pattern>
+        </defs>
+        <rect x="80" y="40" width="480" height="200" fill="url(#pk-net)"></rect>
+        <path
+          d="M76 244V36H564V244"
+          fill="none"
+          stroke="#f4f7f4"
+          stroke-width="8"
+          stroke-linejoin="round"></path>
+        <line
+          x1="0"
+          y1="244"
+          x2="640"
+          y2="244"
+          stroke="rgb(232 239 233 / 0.5)"
+          stroke-width="3"></line>
+        <path
+          d="M200 400L230 244M440 400L410 244"
+          stroke="rgb(232 239 233 / 0.2)"
+          stroke-width="3"></path>
+        <circle cx="320" cy="350" r="4" fill="rgb(232 239 233 / 0.6)"></circle>
+      </svg>
+
+      <div class="pk-keeper absolute" data-pk-keeper aria-hidden="true">
+        <svg viewBox="0 0 60 90" class="size-full">
+          <circle cx="30" cy="12" r="10" fill="#e9c4a0"></circle>
+          <rect x="14" y="24" width="32" height="34" rx="8" fill="#ffb020"
+          ></rect>
+          <path
+            d="M14 30L2 12M46 30L58 12"
+            stroke="#ffb020"
+            stroke-width="8"
+            stroke-linecap="round"></path>
+          <circle cx="2" cy="10" r="5" fill="#0a1f17"></circle>
+          <circle cx="58" cy="10" r="5" fill="#0a1f17"></circle>
+          <path
+            d="M22 58L18 86M38 58L42 86"
+            stroke="#0a1f17"
+            stroke-width="9"
+            stroke-linecap="round"></path>
+        </svg>
+      </div>
+
+      <div
+        class="pk-zones absolute grid grid-cols-3 grid-rows-2"
+        role="group"
+        aria-label="Pick where to shoot"
+      >
+        {
+          zones.map((label, i) => (
+            <button
+              type="button"
+              class="pk-zone"
+              data-pk-zone={i}
+              aria-label={`Shoot ${label.toLowerCase()}`}
+            >
+              <span class="pk-target" aria-hidden="true" />
+            </button>
+          ))
+        }
+      </div>
+
+      <div class="pk-ball absolute" data-pk-ball aria-hidden="true">
+        <Ball size={34} />
+      </div>
+    </div>
+
+    <div class="mt-4 flex min-h-11 items-center justify-between gap-4">
+      <p
+        class="font-display text-xl font-bold tracking-wide uppercase"
+        aria-live="polite"
+        data-pk-status
+      >
+        Pick a corner.
+      </p>
+      <button
+        type="button"
+        class="btn-kick btn-primary !px-5 !py-2.5"
+        data-pk-restart
+        hidden>Play again</button
+      >
+    </div>
+  </div>
+</dialog>
+
+<script>
+  // The game logic is only downloaded the first time someone opens it.
+  document.addEventListener("matchday:penalty", async () => {
+    const { openPenalty } = await import("@lib/penalty");
+    openPenalty();
+  });
+</script>
+
+<style>
+  .pk-stage {
+    background:
+      repeating-linear-gradient(
+        90deg,
+        rgb(255 255 255 / 0.03) 0 10%,
+        transparent 10% 20%
+      ),
+      linear-gradient(180deg, #0c2219 0%, #154030 60%, #1a4a38 100%);
+  }
+
+  /* The goal mouth in the SVG is x 80-560 / y 40-240 of 640x400. */
+  .pk-zones {
+    left: 12.5%;
+    right: 12.5%;
+    top: 10%;
+    height: 50%;
+  }
+
+  .pk-zone {
+    display: grid;
+    place-items: center;
+  }
+
+  .pk-target {
+    width: 34%;
+    aspect-ratio: 1;
+    border-radius: 9999px;
+    border: 2px dashed rgb(200 255 61 / 0.35);
+    transition:
+      transform 200ms,
+      border-color 200ms,
+      background-color 200ms;
+  }
+
+  .pk-zone:hover .pk-target,
+  .pk-zone:focus-visible .pk-target {
+    transform: scale(1.15);
+    border-style: solid;
+    border-color: var(--color-floodlight);
+    background: rgb(200 255 61 / 0.15);
+  }
+
+  .pk-zones[aria-disabled="true"] {
+    pointer-events: none;
+  }
+
+  .pk-keeper {
+    left: 50%;
+    top: 34%;
+    width: 11%;
+    aspect-ratio: 60 / 90;
+    translate: -50% 0;
+    transition: transform 420ms cubic-bezier(0.2, 0.9, 0.3, 1);
+  }
+
+  .pk-ball {
+    left: 50%;
+    top: 80%;
+    translate: -50% -50%;
+    transition: transform 450ms cubic-bezier(0.15, 0.7, 0.3, 1);
+  }
+
+  .pk-dot[data-result="goal"] {
+    background: var(--color-floodlight);
+    --tw-ring-color: var(--color-floodlight);
+  }
+
+  .pk-dot[data-result="save"],
+  .pk-dot[data-result="miss"] {
+    background: var(--color-card-red);
+    --tw-ring-color: var(--color-card-red);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pk-keeper,
+    .pk-ball {
+      transition: none;
+    }
+  }
+</style>

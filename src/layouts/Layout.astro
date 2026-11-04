@@ -10,6 +10,7 @@ import "@fontsource/jetbrains-mono/latin-500";
 import { SITE_CONFIG } from "@config";
 import Footer from "@components/Footer.astro";
 import Stadium from "@components/Stadium.astro";
+import PenaltyGame from "@components/PenaltyGame.astro";
 
 const {
   title,
@@ -75,6 +76,7 @@ const ogImgUrl = socialImage ? canonicalURL + socialImage : null;
       <slot />
     </main>
     <Footer author={author} socialLinks={socialLinks} />
+    <PenaltyGame />
 
     <script>
       import { initMagnetic, initReveal, initSmoothScroll } from "@lib/motion";
