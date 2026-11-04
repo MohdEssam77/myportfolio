@@ -8,7 +8,11 @@ export const PLAYER = {
   club: "SV Saar 05",
   uni: "Saarland University",
   uniShort: "UdS",
-  rival: "Boring Portfolios",
+  rival: "AOP",
+  rivalMeaning: [
+    "AOP stands for Aspect-Oriented Programming: A programming paradigm that helps separate cross-cutting concerns (like logging, security, or transaction management) from core business logic.",
+    "But here and in this portfolio, it means Any Other Portfolio",
+  ],
 };
 
 // Match minute each section "kicks off" at, used by the scoreboard clock.
@@ -62,7 +66,9 @@ export interface FormationSlot {
 export const formationSlots = (count: number): FormationSlot[] => {
   const rows =
     FORMATIONS[count] ??
-    Array.from({ length: Math.ceil(count / 4) }, (_, i) => Math.min(4, count - i * 4));
+    Array.from({ length: Math.ceil(count / 4) }, (_, i) =>
+      Math.min(4, count - i * 4),
+    );
   const slots: FormationSlot[] = [];
   rows.forEach((size, row) => {
     const y = rows.length === 1 ? 50 : 18 + (row * 64) / (rows.length - 1);
@@ -76,11 +82,14 @@ export const formationSlots = (count: number): FormationSlot[] => {
 // Squad numbers for projects. #17 is reserved for Mohammed.
 const SQUAD_NUMBERS = [9, 10, 7, 11, 8, 6, 4, 5, 3, 2, 14, 21, 23];
 
-export const squadNumber = (index: number) => SQUAD_NUMBERS[index] ?? index + 24;
+export const squadNumber = (index: number) =>
+  SQUAD_NUMBERS[index] ?? index + 24;
 
 // A project counts as a "hackathon winner" when a hackathon links to its source.
-export const isHackathonProject = (project: ProjectProps, hackathons: HackathonProps[]) =>
-  hackathons.some((h) => h.link && h.link === project.linkSource);
+export const isHackathonProject = (
+  project: ProjectProps,
+  hackathons: HackathonProps[],
+) => hackathons.some((h) => h.link && h.link === project.linkSource);
 
 export const deriveStats = (content: SiteContent) => {
   const tiers = content.hackathons.map((h) => trophyTier(h.rank));

@@ -7,6 +7,7 @@ const prompt = `${hero.name.split(" ")[0].toLowerCase()}@${PLAYER.uniShort.toLow
 
 // Everything the terminal prints comes from the site content.
 const data = {
+  aop: PLAYER.rivalMeaning,
   whoami: [
     `${hero.name} · #${PLAYER.number}`,
     hero.specialty,
@@ -104,6 +105,7 @@ const data = {
   let historyIndex = 0;
 
   const data: {
+    aop: string[];
     whoami: string[];
     projects: string[];
     hackathons: string[];
@@ -199,6 +201,13 @@ const data = {
       },
     },
     clear: { help: "clear the screen", run: () => log?.replaceChildren() },
+    aop: {
+      help: "what does AOP mean?",
+      run: () => {
+        const [definition, here] = data.aop;
+        print(definition, { text: here, tone: "accent" });
+      },
+    },
     exit: { help: "close the terminal", run: () => dialog?.close() },
   };
 
@@ -307,7 +316,12 @@ const data = {
     }
   });
 
-  document.addEventListener("matchday:terminal", open);
+  // Other parts of the page can open the VAR and run a command in it.
+  document.addEventListener("matchday:terminal", (e) => {
+    open();
+    const command = (e as CustomEvent<{ run?: string } | null>).detail?.run;
+    if (command) run(command);
+  });
 </script>
 
 <style>

@@ -11,18 +11,28 @@ const lastName = author.split(" ").slice(1).join(" ");
 ---
 
 <footer class="mt-10 w-full px-4 pt-10 pb-10 text-chalk sm:px-6">
-  <div class="full-time mx-auto max-w-3xl rounded-3xl px-6 py-8 text-center sm:px-10">
-    <p class="mb-5 inline-flex items-center gap-2 rounded bg-chalk/10 px-3 py-1 font-mono text-[11px] tracking-[0.25em] text-muted uppercase">
+  <div
+    class="full-time mx-auto max-w-3xl rounded-3xl px-6 py-8 text-center sm:px-10"
+  >
+    <p
+      class="mb-5 inline-flex items-center gap-2 rounded bg-chalk/10 px-3 py-1 font-mono text-[11px] tracking-[0.25em] text-muted uppercase"
+    >
       Full time · 90+2'
     </p>
 
-    <div class="mb-8 flex items-center justify-center gap-3 font-display font-black tracking-wide uppercase sm:gap-5">
+    <div
+      class="mb-8 flex items-center justify-center gap-3 font-display font-black tracking-wide uppercase sm:gap-5"
+    >
       <span class="text-2xl sm:text-4xl">{lastName}</span>
-      <span class="ft-led flex items-center gap-2 rounded-lg px-3 py-1.5 text-3xl text-led sm:text-5xl">
-        <span data-final-score>6</span><span class="text-led/50">–</span><span>0</span>
+      <span
+        class="ft-led flex items-center gap-2 rounded-lg px-3 py-1.5 text-3xl text-led sm:text-5xl"
+      >
+        <span data-final-score>6</span><span class="text-led/50">–</span><span
+          >0</span
+        >
       </span>
       <span class="text-2xl text-muted sm:text-4xl">
-        <span class="sm:hidden">BOR</span><span class="hidden sm:inline">{PLAYER.rival}</span>
+        {PLAYER.rival}
       </span>
     </div>
 
@@ -62,9 +72,11 @@ const lastName = author.split(" ").slice(1).join(" ");
   const phases = document.querySelectorAll("main section[id]").length;
   if (final && phases) final.textContent = `${phases - 1}`;
 
-  document.querySelector("[data-open-penalty]")?.addEventListener("click", () => {
-    document.dispatchEvent(new CustomEvent("matchday:penalty"));
-  });
+  document
+    .querySelector("[data-open-penalty]")
+    ?.addEventListener("click", () => {
+      document.dispatchEvent(new CustomEvent("matchday:penalty"));
+    });
 </script>
 
 <style>
@@ -83,7 +95,8 @@ const lastName = author.split(" ").slice(1).join(" ");
 
   .ft-led {
     background:
-      radial-gradient(circle, rgb(0 0 0 / 0.55) 1px, transparent 1.4px) 0 0 / 3px 3px,
+      radial-gradient(circle, rgb(0 0 0 / 0.55) 1px, transparent 1.4px) 0 0 /
+        3px 3px,
       #050c09;
     box-shadow: inset 0 0 0 1px rgb(255 176 32 / 0.15);
     text-shadow: 0 0 10px rgb(255 176 32 / 0.7);

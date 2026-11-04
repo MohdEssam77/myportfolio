@@ -50,6 +50,7 @@ Also:
 | `goto <section>` | Scroll to a section (`experience`, `projects`, `hackathons`, `about`, `contact`) |
 | `cv` | Download the resume |
 | `contact` | Jump to the transfer desk |
+| `aop` | Who's the opponent on the scoreboard? |
 | `kickoff` | Replay the floodlights intro |
 | `penalty` | Score a penalty to unlock a random fact about Halboup |
 | `clear` / `exit` | Clear the screen / close |

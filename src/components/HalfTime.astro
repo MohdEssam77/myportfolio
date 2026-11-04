@@ -13,33 +13,65 @@ const rows = [
 const lastName = SITE_CONTENT.hero.name.split(" ").slice(1).join(" ");
 ---
 
-<section id="stats" class="mx-auto max-w-3xl py-16" aria-labelledby="stats-title">
+<section
+  id="stats"
+  class="mx-auto max-w-3xl py-16"
+  aria-labelledby="stats-title"
+>
   <div class="halftime overflow-hidden rounded-2xl" data-reveal>
-    <header class="flex items-stretch font-mono text-xs tracking-[0.2em] uppercase">
-      <span class="bg-floodlight px-3 py-2 font-medium text-pitch">{SECTION_MINUTES.stats}'</span>
-      <h2 id="stats-title" class="flex-1 bg-chalk/10 px-4 py-2 text-chalk">Half-time stats</h2>
+    <header
+      class="flex items-stretch font-mono text-xs tracking-[0.2em] uppercase"
+    >
+      <span class="bg-floodlight px-3 py-2 font-medium text-pitch"
+        >{SECTION_MINUTES.stats}'</span
+      >
+      <h2 id="stats-title" class="flex-1 bg-chalk/10 px-4 py-2 text-chalk">
+        Half-time stats
+      </h2>
     </header>
 
-    <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-x-4 px-5 pt-5 pb-2 font-display font-black tracking-wide uppercase sm:px-8">
+    <div
+      class="grid grid-cols-[1fr_auto_1fr] items-center gap-x-4 px-5 pt-5 pb-2 font-display font-black tracking-wide uppercase sm:px-8"
+    >
       <span class="text-xl text-chalk sm:text-2xl">{lastName}</span>
-      <span class="text-center font-mono text-[10px] font-normal text-muted">vs</span>
-      <span class="text-right text-xl text-muted sm:text-2xl">{PLAYER.rival}</span>
+      <span class="text-center font-mono text-[10px] font-normal text-muted"
+        >vs</span
+      >
+      <span class="text-right text-xl text-muted sm:text-2xl"
+        >{PLAYER.rival}</span
+      >
     </div>
+    <p class="px-5 text-right sm:px-8">
+      <button
+        type="button"
+        class="font-mono text-[10px] tracking-wider text-muted underline decoration-dotted underline-offset-4 hover:text-floodlight"
+        data-ask-aop
+      >
+        Who's {PLAYER.rival}? Ask the VAR →
+      </button>
+    </p>
 
     <dl class="space-y-4 px-5 pt-3 pb-7 sm:px-8">
       {
         rows.map(({ label, value }) => (
           <div class="stat-row">
             <div class="grid grid-cols-[3rem_1fr_3rem] items-baseline">
-              <dd class="font-display text-3xl leading-none font-black text-floodlight" data-count={value}>
+              <dd
+                class="font-display text-3xl leading-none font-black text-floodlight"
+                data-count={value}
+              >
                 {value}
               </dd>
-              <dt class="text-center font-mono text-[11px] tracking-[0.2em] text-muted uppercase">{label}</dt>
-              <dd class="text-right font-display text-3xl leading-none font-black text-chalk/40">0</dd>
+              <dt class="text-center font-mono text-[11px] tracking-[0.2em] text-muted uppercase">
+                {label}
+              </dt>
+              <dd class="text-right font-display text-3xl leading-none font-black text-chalk/40">
+                0
+              </dd>
             </div>
             <div class="mt-2 flex h-1.5 gap-1" aria-hidden="true">
-              <span class="stat-bar h-full flex-1 rounded-full bg-floodlight"></span>
-              <span class="h-full w-1 rounded-full bg-chalk/15"></span>
+              <span class="stat-bar h-full flex-1 rounded-full bg-floodlight" />
+              <span class="h-full w-1 rounded-full bg-chalk/15" />
             </div>
           </div>
         ))
@@ -50,6 +82,12 @@ const lastName = SITE_CONTENT.hero.name.split(" ").slice(1).join(" ");
 
 <script>
   import { prefersReducedMotion } from "@lib/motion";
+
+  document.querySelector("[data-ask-aop]")?.addEventListener("click", () => {
+    document.dispatchEvent(
+      new CustomEvent("matchday:terminal", { detail: { run: "aop" } }),
+    );
+  });
 
   // Count the home numbers up and grow the bars once the strip is on screen.
   const strip = document.querySelector<HTMLElement>(".halftime");
@@ -93,7 +131,11 @@ const lastName = SITE_CONTENT.hero.name.split(" ").slice(1).join(" ");
   }
 
   .halftime {
-    background: linear-gradient(180deg, rgb(18 56 42 / 0.85), rgb(8 23 15 / 0.9));
+    background: linear-gradient(
+      180deg,
+      rgb(18 56 42 / 0.85),
+      rgb(8 23 15 / 0.9)
+    );
     box-shadow:
       inset 0 0 0 1px rgb(232 239 233 / 0.08),
       0 30px 60px -30px rgb(0 0 0 / 0.8);
