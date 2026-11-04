@@ -86,12 +86,123 @@ const statCells = [
           <span>CS @ {PLAYER.uniShort} · {PLAYER.club}</span>
           <span class="text-floodlight/80">main@{PLAYER.number}c0de</span>
         </footer>
+        <div class="card-holo pointer-events-none absolute inset-0 z-20" aria-hidden="true"></div>
+        <div class="card-glare pointer-events-none absolute inset-0 z-20" aria-hidden="true"></div>
       </article>
     </div>
   </div>
 </div>
 
+<script>
+  import { prefersReducedMotion } from "@lib/motion";
+
+  const card = document.querySelector<HTMLElement>("[data-player-card]");
+  const tilt = card?.querySelector<HTMLElement>(".card-tilt");
+  const clamp = (v: number) => Math.min(1, Math.max(0, v));
+
+  // px/py are the pointer position over the card, 0..1.
+  const apply = (px: number, py: number) => {
+    if (!tilt) return;
+    tilt.style.setProperty("--rx", `${(0.5 - py) * 18}deg`);
+    tilt.style.setProperty("--ry", `${(px - 0.5) * 22}deg`);
+    tilt.style.setProperty("--mx", `${px * 100}%`);
+    tilt.style.setProperty("--my", `${py * 100}%`);
+  };
+
+  const reset = () => {
+    card?.classList.remove("is-hover");
+    tilt?.style.removeProperty("--rx");
+    tilt?.style.removeProperty("--ry");
+  };
+
+  if (card && tilt && !prefersReducedMotion()) {
+    card.addEventListener("pointermove", (e) => {
+      if (e.pointerType !== "mouse") return;
+      const rect = card.getBoundingClientRect();
+      card.classList.add("is-hover");
+      apply((e.clientX - rect.left) / rect.width, (e.clientY - rect.top) / rect.height);
+    });
+    card.addEventListener("pointerleave", reset);
+
+    // Phones that expose orientation without a permission prompt get gyro tilt.
+    const DOE = window.DeviceOrientationEvent as unknown as { requestPermission?: unknown };
+    if (matchMedia("(pointer: coarse)").matches && DOE && typeof DOE.requestPermission !== "function") {
+      window.addEventListener("deviceorientation", (e) => {
+        if (e.beta === null || e.gamma === null) return;
+        card.classList.add("is-hover");
+        apply(clamp((e.gamma + 25) / 50), clamp((e.beta - 20) / 50));
+      });
+    }
+  }
+</script>
+
 <style>
+  .player-card {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .player-card.is-hover {
+    animation-play-state: paused;
+  }
+
+  .card-tilt {
+    transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+    transform-style: preserve-3d;
+    transition: transform 500ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .is-hover .card-tilt {
+    transition: transform 90ms linear;
+  }
+
+  .card-holo,
+  .card-glare {
+    border-radius: inherit;
+    opacity: 0;
+    transition: opacity 300ms ease;
+  }
+
+  .card-holo {
+    background:
+      repeating-linear-gradient(
+        115deg,
+        #ff4fd8 0%,
+        #3dfcff 8%,
+        #c8ff3d 16%,
+        #ffb020 24%,
+        #ff4fd8 32%
+      );
+    background-size: 300% 300%;
+    background-position: var(--mx, 50%) var(--my, 50%);
+    mix-blend-mode: color-dodge;
+    filter: saturate(1.2);
+  }
+
+  .card-glare {
+    background: radial-gradient(
+      circle at var(--mx, 50%) var(--my, 50%),
+      rgb(255 255 255 / 0.35) 0%,
+      transparent 45%
+    );
+    mix-blend-mode: overlay;
+  }
+
+  .is-hover .card-holo {
+    opacity: 0.28;
+  }
+
+  .is-hover .card-glare {
+    opacity: 1;
+  }
+
+  @keyframes float {
+    50% { transform: translateY(-10px); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .player-card { animation: none; }
+  }
+
   .card-face {
     background:
       radial-gradient(120% 80% at 50% 0%, var(--color-turf-light) 0%, transparent 60%),
