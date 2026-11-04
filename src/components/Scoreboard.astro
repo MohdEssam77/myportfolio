@@ -50,10 +50,8 @@ const phases = navLinks.map((link) => ({
           >0</span
         >
       </span>
-      <span class="tracking-wide whitespace-nowrap text-muted">
-        <span class="2xl:hidden">BOR</span><span class="hidden 2xl:inline"
-          >{PLAYER.rival}</span
-        >
+      <span class="tracking-wide whitespace-nowrap text-muted" title={PLAYER.rival}>
+        BOR<span class="sr-only"> ({PLAYER.rival})</span>
       </span>
       <span
         class="match-clock ml-1 flex items-center gap-1.5 rounded-md bg-chalk/5 px-2 py-1 font-mono text-xs font-medium text-chalk normal-case"
@@ -138,15 +136,15 @@ const phases = navLinks.map((link) => ({
         </li>
         <li class="mt-2 xl:mt-0">
           <a
-            class="inline-flex items-center gap-2 rounded-lg bg-floodlight px-3.5 py-2 text-sm font-semibold text-pitch transition-transform hover:-translate-y-0.5"
+            class="inline-flex items-center gap-1.5 rounded-lg bg-floodlight px-2.5 py-2 text-xs font-semibold text-pitch transition-[filter] hover:brightness-110"
             href="/Halboup_Mohammed.pdf"
             download="Mohammed_Halboup_Resume.pdf"
           >
             Resume
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              width="14"
-              height="14"
+              width="12"
+              height="12"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
