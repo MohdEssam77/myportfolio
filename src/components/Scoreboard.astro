@@ -37,7 +37,7 @@ const phases = navLinks.map((link) => ({
         <span class="md:hidden">HAL</span><span class="hidden md:inline">Halboup</span>
       </span>
       <span class="led-box flex items-center gap-1 rounded-md px-2 py-1 text-led">
-        <span>0</span><span class="text-led/50">–</span><span>0</span>
+        <span data-score-home>0</span><span class="text-led/50">–</span><span>0</span>
       </span>
       <span class="tracking-wide text-muted">
         <span class="lg:hidden">BOR</span><span class="hidden lg:inline">{PLAYER.rival}</span>
@@ -157,9 +157,32 @@ const phases = navLinks.map((link) => ({
     return activeSection || sections[0]?.id || "";
   };
 
+  // Every phase reached is a goal for the home side. The rival never scores.
+  const homeScore = document.querySelector<HTMLElement>("[data-score-home]");
+  let currentPhase = "";
+
+  const announcePhase = (sectionId: string) => {
+    if (sectionId === currentPhase) return;
+    const ids = Array.from(document.querySelectorAll("main section[id]"), (s) => s.id);
+    const goals = Math.max(0, ids.indexOf(sectionId));
+    if (homeScore && homeScore.textContent !== `${goals}`) {
+      homeScore.textContent = `${goals}`;
+      homeScore.classList.remove("goal");
+      void homeScore.offsetWidth;
+      homeScore.classList.add("goal");
+    }
+    if (currentPhase) {
+      document.dispatchEvent(new CustomEvent("matchday:phase", { detail: { id: sectionId } }));
+    }
+    currentPhase = sectionId;
+  };
+
   const updateNavFromScroll = () => {
     const activeSection = getActiveSection();
-    if (activeSection) updateActiveNav(activeSection);
+    if (activeSection) {
+      updateActiveNav(activeSection);
+      announcePhase(activeSection);
+    }
   };
 
   updateNavFromScroll();
@@ -239,6 +262,23 @@ const phases = navLinks.map((link) => ({
 
   @media (prefers-reduced-motion: reduce) {
     .live-dot { animation: none; }
+  }
+
+  [data-score-home] {
+    display: inline-block;
+  }
+
+  [data-score-home]:global(.goal) {
+    animation: goal 700ms cubic-bezier(0.3, 1.6, 0.5, 1);
+  }
+
+  @keyframes goal {
+    0% { transform: translateY(-80%) scale(1.4); color: var(--color-floodlight); }
+    100% { transform: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-score-home]:global(.goal) { animation: none; }
   }
 
   .nav-item.is-active {
