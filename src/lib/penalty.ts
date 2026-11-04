@@ -1,9 +1,11 @@
-import { lockScroll, prefersReducedMotion } from "./motion";
+import { FACTS, type Fact } from "../config/facts";
+import { lockScroll, prefersReducedMotion, scrollToTarget } from "./motion";
 
 type Result = "goal" | "save" | "miss";
 
 const SHOTS = 5;
-const BEST_KEY = "matchday:pk-best";
+const BAG_KEY = "matchday:facts-bag";
+const SEEN_KEY = "matchday:facts-seen";
 
 const $ = <T extends Element>(root: ParentNode, sel: string) =>
   root.querySelector<T>(sel);
@@ -12,18 +14,46 @@ let dialog: HTMLDialogElement | null = null;
 let results: Result[] = [];
 let busy = false;
 
-const readBest = () => {
+const load = (key: string): number[] => {
   try {
-    return Number(localStorage.getItem(BEST_KEY) ?? 0);
+    const value = JSON.parse(localStorage.getItem(key) ?? "[]");
+    return Array.isArray(value)
+      ? value.filter((i) => Number.isInteger(i) && i >= 0 && i < FACTS.length)
+      : [];
   } catch {
-    return 0;
+    return [];
   }
 };
 
-const writeBest = (score: number) => {
+const save = (key: string, value: number[]) => {
   try {
-    localStorage.setItem(BEST_KEY, `${score}`);
+    localStorage.setItem(key, JSON.stringify(value));
   } catch {}
+};
+
+const shuffled = (items: number[]) => {
+  const out = [...items];
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+};
+
+// Shuffle bag: every fact shows once, in random order, before any repeats.
+// The bag survives reloads, and a fresh bag never starts with the last fact.
+let lastFact = -1;
+const nextFact = (): Fact => {
+  let bag = load(BAG_KEY);
+  if (bag.length === 0) {
+    bag = shuffled(FACTS.map((_, i) => i));
+    if (bag[0] === lastFact && bag.length > 1) bag.push(bag.shift()!);
+  }
+  const index = bag.shift()!;
+  lastFact = index;
+  save(BAG_KEY, bag);
+  save(SEEN_KEY, [...new Set([...load(SEEN_KEY), index])]);
+  return FACTS[index];
 };
 
 const els = () => {
@@ -35,20 +65,22 @@ const els = () => {
     keeper: $<HTMLElement>(d, "[data-pk-keeper]")!,
     status: $<HTMLElement>(d, "[data-pk-status]")!,
     restart: $<HTMLButtonElement>(d, "[data-pk-restart]")!,
-    best: $<HTMLElement>(d, "[data-pk-best]")!,
+    unlocked: $<HTMLElement>(d, "[data-pk-unlocked]")!,
+    fact: $<HTMLElement>(d, "[data-pk-fact]")!,
     dots: d.querySelectorAll<HTMLElement>(".pk-dot"),
   };
 };
 
 const reset = () => {
-  const { ball, keeper, status, restart, best, dots, zones } = els();
+  const { ball, keeper, status, restart, unlocked, fact, dots, zones } = els();
   results = [];
   busy = false;
   ball.style.transform = "";
   keeper.style.transform = "";
   status.textContent = "Pick a corner.";
   restart.hidden = true;
-  best.textContent = `${readBest()}`;
+  fact.hidden = true;
+  unlocked.textContent = `${load(SEEN_KEY).length}`;
   zones.removeAttribute("aria-disabled");
   dots.forEach((dot) => dot.removeAttribute("data-result"));
 };
@@ -79,16 +111,35 @@ const MESSAGES: Record<Result, string[]> = {
     "Back of the net!",
     "Keeper sent the wrong way!",
   ],
-  save: ["Saved!", "What a stop!", "Keeper guessed right."],
+  save: [
+    "Saved! Score to unlock a fact.",
+    "What a stop! Try again.",
+    "Keeper guessed right.",
+  ],
   miss: ["Off the post!", "Over the bar!"],
 };
 
 const pick = (list: string[]) => list[Math.floor(Math.random() * list.length)];
 
+const showFact = (f: Fact) => {
+  const { fact, unlocked } = els();
+  $<HTMLElement>(fact, "[data-pk-fact-kind]")!.textContent =
+    `Did you know? · ${f.kind}`;
+  $<HTMLElement>(fact, "[data-pk-fact-title]")!.textContent = f.title;
+  $<HTMLElement>(fact, "[data-pk-fact-text]")!.textContent = f.text;
+  $<HTMLAnchorElement>(fact, "[data-pk-fact-link]")!.dataset.section =
+    f.section;
+  // Re-trigger the entrance animation for consecutive goals.
+  fact.hidden = true;
+  void fact.offsetWidth;
+  fact.hidden = false;
+  unlocked.textContent = `${load(SEEN_KEY).length}`;
+};
+
 const shoot = (zone: HTMLElement) => {
   if (busy || results.length >= SHOTS) return;
   busy = true;
-  const { ball, keeper, status, zones, dots, restart, best } = els();
+  const { ball, keeper, status, zones, dots, restart } = els();
   zones.setAttribute("aria-disabled", "true");
 
   const shot = Number(zone.dataset.pkZone);
@@ -109,6 +160,7 @@ const shoot = (zone: HTMLElement) => {
     results.push(result);
     dots[results.length - 1]?.setAttribute("data-result", result);
     status.textContent = pick(MESSAGES[result]);
+    if (result === "goal") showFact(nextFact());
     document.dispatchEvent(
       new CustomEvent("matchday:sfx", {
         detail: result === "goal" ? "goal" : "save",
@@ -118,10 +170,7 @@ const shoot = (zone: HTMLElement) => {
     setTimeout(() => {
       if (results.length >= SHOTS) {
         const score = results.filter((r) => r === "goal").length;
-        const record = score > readBest();
-        if (record) writeBest(score);
-        best.textContent = `${readBest()}`;
-        status.textContent = `Full time: ${score}/${SHOTS}${record ? " · new record!" : ""}`;
+        status.textContent = `Full time: ${score}/${SHOTS} · ${score === 1 ? "1 fact" : `${score} facts`}`;
         restart.hidden = false;
         restart.focus();
         return;
@@ -141,6 +190,12 @@ const bind = () => {
     .querySelectorAll<HTMLElement>("[data-pk-zone]")
     .forEach((zone) => zone.addEventListener("click", () => shoot(zone)));
   $(dialog, "[data-pk-restart]")?.addEventListener("click", reset);
+  $(dialog, "[data-pk-fact-link]")?.addEventListener("click", (e) => {
+    e.preventDefault();
+    const section = (e.currentTarget as HTMLElement).dataset.section;
+    dialog?.close();
+    if (section) scrollToTarget(section);
+  });
   $(dialog, "[data-pk-close]")?.addEventListener("click", () =>
     dialog?.close(),
   );

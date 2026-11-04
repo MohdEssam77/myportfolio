@@ -29,7 +29,7 @@ The site is one 90-minute match. Scrolling is the match clock, and each section 
 | 55' | **Trophy Cabinet** (hackathons) | Gold/silver/bronze trophies, each opening a match report with a photo gallery |
 | 75' | **Post-match Interview** (about) | The about text types out at a press conference |
 | 85' | **Transfer Desk** (contact) | The contact form is a transfer offer: yellow card for invalid input, red card for errors, goal + confetti when sent |
-| 90+2' | **Full Time** (footer) | Final score, plus a hidden penalty shootout mini-game |
+| 90+2' | **Full Time** (footer) | Final score, plus "Know more about Halboup": score a penalty to unlock a random fact |
 
 Also:
 
@@ -51,7 +51,7 @@ Also:
 | `cv` | Download the resume |
 | `contact` | Jump to the transfer desk |
 | `kickoff` | Replay the floodlights intro |
-| `penalty` | Take a penalty |
+| `penalty` | Score a penalty to unlock a random fact about Halboup |
 | `clear` / `exit` | Clear the screen / close |
 
 <kbd>Tab</kbd> autocompletes, <kbd>↑</kbd>/<kbd>↓</kbd> walk through history. There are a few hidden commands too.
