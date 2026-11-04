@@ -7,6 +7,17 @@ interface Props {
 }
 
 const { experience } = Astro.props;
+
+// Career = build-up play: oldest role starts at our own box (bottom),
+// the latest one is up front near the opponent's goal (top).
+const count = experience.length;
+const year = (date: string) => date.match(/\d{4}/)?.[0]?.slice(2) ?? "";
+const markers = experience.map((role, i) => {
+  const step = count - 1 - i;
+  const y = count === 1 ? 50 : 84 - (step * 66) / (count - 1);
+  const x = i === 0 ? 50 : step % 2 === 0 ? 30 : 70;
+  return { x, y, number: step + 1, id: `role-${i}`, label: `'${year(role.startDate)}`, company: role.company };
+});
 ---
 
 <Section text="Work Experience" href="experience" wide>
@@ -41,13 +52,33 @@ const { experience } = Astro.props;
             <path d="M10 22a12 12 0 0 0 12-12M378 10a12 12 0 0 0 12 12M10 578a12 12 0 0 1 12 12M378 590a12 12 0 0 1 12-12"></path>
           </g>
         </svg>
+
+        <ol class="absolute inset-4">
+          {
+            markers.map((m) => (
+              <li class="absolute -translate-x-1/2 -translate-y-1/2" style={`left:${m.x}%;top:${m.y}%`}>
+                <a
+                  href={`#${m.id}`}
+                  class="marker group flex flex-col items-center gap-1.5"
+                  data-marker={m.id}
+                  aria-label={`Role ${m.number}: ${m.company}`}
+                >
+                  <span class="marker-dot relative grid size-12 place-items-center rounded-full border-2 border-chalk/70 bg-pitch font-display text-xl font-black text-chalk transition-all duration-300">
+                    {m.number}
+                  </span>
+                  <span class="rounded bg-pitch/80 px-1.5 py-0.5 font-mono text-[10px] text-muted">{m.label}</span>
+                </a>
+              </li>
+            ))
+          }
+        </ol>
       </div>
     </div>
 
     <div class="flex flex-col gap-10">
       {
-        experience.map(({ company, position, startDate, endDate, summary }) => (
-          <article class="tactic-panel">
+        experience.map(({ company, position, startDate, endDate, summary }, i) => (
+          <article class="tactic-panel scroll-mt-32" id={`role-${i}`} data-panel={`role-${i}`}>
             <h3 class="mb-1.5 font-serif text-2xl font-semibold text-white">{company}</h3>
             <div class="flex flex-col items-start pb-5">
               <h4 class="mb-0.5 font-serif text-2xl font-medium text-primary">{position}</h4>
@@ -73,7 +104,51 @@ const { experience } = Astro.props;
   </div>
 </Section>
 
+<script>
+  // Light up the marker of the role panel currently in the middle of the screen.
+  const markers = document.querySelectorAll<HTMLElement>("[data-marker]");
+  const panels = document.querySelectorAll<HTMLElement>("[data-panel]");
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        const id = (entry.target as HTMLElement).dataset.panel;
+        markers.forEach((m) => m.classList.toggle("is-active", m.dataset.marker === id));
+        panels.forEach((p) => p.classList.toggle("is-active", p.dataset.panel === id));
+      });
+    },
+    { rootMargin: "-45% 0px -45% 0px" },
+  );
+  panels.forEach((p) => observer.observe(p));
+</script>
+
 <style>
+  .marker.is-active .marker-dot,
+  .marker:hover .marker-dot {
+    border-color: var(--color-floodlight);
+    background: var(--color-floodlight);
+    color: var(--color-pitch);
+    box-shadow: 0 0 0 8px rgb(200 255 61 / 0.15), 0 0 30px rgb(200 255 61 / 0.5);
+  }
+
+  .marker.is-active .marker-dot::after {
+    content: "";
+    position: absolute;
+    inset: -6px;
+    border-radius: 9999px;
+    border: 2px solid var(--color-floodlight);
+    animation: ping 1.6s ease-out infinite;
+  }
+
+  @keyframes ping {
+    to { transform: scale(1.7); opacity: 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marker.is-active .marker-dot::after { animation: none; }
+  }
+
   .tactics-board {
     background:
       radial-gradient(120% 90% at 50% 50%, #183f30 0%, #0d281e 70%),
