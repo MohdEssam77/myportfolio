@@ -9,33 +9,78 @@ interface Props {
 const { experience } = Astro.props;
 ---
 
-<Section text="Work Experience" href="experience">
-  {
-    experience.map(({ company, position, startDate, endDate, summary }) => (
-      <div class="mb-10">
-        <h3 class="mb-1.5 font-serif text-2xl font-semibold text-white">
-          {company}
-        </h3>
-        <div class="flex flex-col items-start pb-5">
-          <h4 class="mb-0.5 font-serif text-2xl font-medium text-primary">
-            {position}
-          </h4>
-          <span class="pb-[2px] text-sm text-white/70">
-            {startDate} — {endDate}
-          </span>
-        </div>
-        {Array.isArray(summary) ? (
-          <ul class="list-none">
-            {summary.map((log) => (
-              <li class="relative mb-3 pl-8 text-base text-neutral before:absolute before:top-1 before:left-0 before:content-[url(/check.svg)]">
-                {log}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p class="text-base text-neutral">{summary}</p>
-        )}
+<Section text="Work Experience" href="experience" wide>
+  <div class="tactics grid gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-16">
+    <div class="hidden lg:block">
+      <div class="tactics-board sticky top-28 mx-auto aspect-[2/3] w-full max-w-[420px] rounded-3xl p-4">
+        <svg
+          class="absolute inset-4 size-[calc(100%-2rem)] text-chalk/35"
+          viewBox="0 0 400 600"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+          aria-hidden="true"
+        >
+          <defs>
+            <filter id="chalk">
+              <feTurbulence type="fractalNoise" baseFrequency="1.2" numOctaves="2" result="noise"></feTurbulence>
+              <feDisplacementMap in="SourceGraphic" in2="noise" scale="2.5"></feDisplacementMap>
+            </filter>
+          </defs>
+          <g filter="url(#chalk)">
+            <rect x="10" y="10" width="380" height="580" rx="4"></rect>
+            <line x1="10" y1="300" x2="390" y2="300"></line>
+            <circle cx="200" cy="300" r="60"></circle>
+            <circle cx="200" cy="300" r="3" fill="currentColor"></circle>
+            <rect x="90" y="10" width="220" height="100"></rect>
+            <rect x="150" y="10" width="100" height="38"></rect>
+            <path d="M160 110a50 50 0 0 0 80 0"></path>
+            <rect x="90" y="490" width="220" height="100"></rect>
+            <rect x="150" y="552" width="100" height="38"></rect>
+            <path d="M160 490a50 50 0 0 1 80 0"></path>
+            <path d="M10 22a12 12 0 0 0 12-12M378 10a12 12 0 0 0 12 12M10 578a12 12 0 0 1 12 12M378 590a12 12 0 0 1 12-12"></path>
+          </g>
+        </svg>
       </div>
-    ))
-  }
+    </div>
+
+    <div class="flex flex-col gap-10">
+      {
+        experience.map(({ company, position, startDate, endDate, summary }) => (
+          <article class="tactic-panel">
+            <h3 class="mb-1.5 font-serif text-2xl font-semibold text-white">{company}</h3>
+            <div class="flex flex-col items-start pb-5">
+              <h4 class="mb-0.5 font-serif text-2xl font-medium text-primary">{position}</h4>
+              <span class="pb-[2px] text-sm text-white/70">
+                {startDate} — {endDate}
+              </span>
+            </div>
+            {Array.isArray(summary) ? (
+              <ul class="list-none">
+                {summary.map((log) => (
+                  <li class="relative mb-3 pl-8 text-base text-neutral before:absolute before:top-1 before:left-0 before:content-[url(/check.svg)]">
+                    {log}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p class="text-base text-neutral">{summary}</p>
+            )}
+          </article>
+        ))
+      }
+    </div>
+  </div>
 </Section>
+
+<style>
+  .tactics-board {
+    background:
+      radial-gradient(120% 90% at 50% 50%, #183f30 0%, #0d281e 70%),
+      var(--color-turf);
+    box-shadow:
+      inset 0 0 0 1px rgb(232 239 233 / 0.08),
+      inset 0 0 80px rgb(0 0 0 / 0.45),
+      0 30px 60px -30px rgb(0 0 0 / 0.7);
+  }
+</style>
