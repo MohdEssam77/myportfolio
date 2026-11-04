@@ -1,6 +1,6 @@
 # EPIC: MATCHDAY.exe — Portfolio UI Redesign
 
-> **Status:** Implemented on `feat/matchday-redesign`, waiting for review on a Vercel preview before merge (11.10)
+> **Status:** Shipped. Merged into `main` on 2026-11-04 and live; follow-up tweaks are committed straight to `main`.
 > **Owner:** Mohammed Halboup
 > **Branch:** `feat/matchday-redesign`
 > **Scope:** UI/UX only. All content in `src/config/index.ts` (`SITE_CONTENT`, `SITE_CONFIG`) stays the same.
@@ -239,6 +239,12 @@ Format: Conventional Commits.
 - **Nav collapses below `xl`.** With the sound toggle and VAR chip, the scoreboard no longer fit on laptops, so the phase nav lives in the menu below 1280px and the rival name is abbreviated below 2xl.
 - **Images moved to `src/assets/content`.** Content paths are unchanged; `src/lib/media.ts` resolves them. GIFs stay in `public/` but are served as WebM/MP4 clips with poster frames.
 - **Fixes found while building** (each its own commit): hero section id, contact form selector, smooth scroll under reduced motion, chronological marker numbering, 360px overflow, and a contact-form type error that was squashed into its original commit so every commit builds.
+- **Post-launch changes (requested after review):**
+  - Sound removed completely.
+  - The penalty game became "Know more about Halboup" (random facts from `src/config/facts.ts`).
+  - The opponent became "AOP" (explained by the `aop` VAR command), and VAR now means "video assistant remote".
+  - Phones get a vertical tactics pitch.
+  - The player card shows skill ratings (`SKILLS` in `src/config/ui.ts`) instead of counts.
 - **Extras not in the original list:** custom 404 links back to home sections, hidden terminal commands (`sudo`, `var`, `offside`).
 
 ## 7. Decisions (answered by Mohammed)
