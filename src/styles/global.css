@@ -155,3 +155,31 @@ html[data-lights="off"] body::after {
 html.scroll-locked {
   overflow: hidden;
 }
+
+/* Accessibility */
+:focus-visible {
+  outline: 2px solid var(--color-floodlight);
+  outline-offset: 3px;
+}
+
+.skip-link {
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 100;
+  border-radius: 0.5rem;
+  background: var(--color-floodlight);
+  padding: 0.6rem 1rem;
+  color: var(--color-pitch);
+  font-weight: 600;
+  transform: translateY(-200%);
+}
+
+.skip-link:focus-visible {
+  transform: none;
+}
+
+::selection {
+  background: var(--color-floodlight);
+  color: var(--color-pitch);
+}

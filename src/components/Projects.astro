@@ -104,6 +104,7 @@ const formation = [...new Set(slots.map((s) => s.y))]
                   type="button"
                   class="player group flex flex-col items-center gap-2"
                   data-project={p.index}
+                  aria-describedby={`player-tip-${p.index}`}
                   aria-label={`${p.name}, number ${p.number}${p.podium ? ", hackathon podium" : ""}`}
                 >
                   <span class="jersey relative grid size-16 place-items-center rounded-full border-2 border-chalk/80 bg-pitch font-display text-2xl font-black text-chalk transition-all duration-300 group-hover:-translate-y-1 group-hover:border-floodlight group-hover:bg-floodlight group-hover:text-pitch">
@@ -122,6 +123,7 @@ const formation = [...new Set(slots.map((s) => s.y))]
                   </span>
                 </button>
                 <div
+                  id={`player-tip-${p.index}`}
                   role="tooltip"
                   class:list={[
                     "player-tip pointer-events-none absolute left-1/2 z-20 w-64 -translate-x-1/2 rounded-xl border border-floodlight/30 bg-pitch/95 p-4 text-left shadow-2xl backdrop-blur",
