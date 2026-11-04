@@ -37,7 +37,25 @@ const ogImgUrl = socialImage ? canonicalURL + socialImage : null;
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
-    <script is:inline>document.documentElement.classList.add("js");</script>
+    <script is:inline>
+      (() => {
+        const html = document.documentElement;
+        html.classList.add("js");
+        try {
+          const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+          if (!reduced && !sessionStorage.getItem("matchday:kickoff-seen")) {
+            html.dataset.lights = "off";
+            html.classList.add("intro");
+            // Never leave the stadium dark if the intro script fails to load.
+            setTimeout(() => {
+              if (!html.classList.contains("intro")) return;
+              html.classList.remove("intro");
+              html.removeAttribute("data-lights");
+            }, 4000);
+          }
+        } catch {}
+      })();
+    </script>
 
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
