@@ -42,19 +42,18 @@ const lastName = rest.join(" ");
       {
         phone && (
           <a
-            class="inline-block rounded-full bg-floodlight px-7 py-4 text-sm leading-5 font-semibold text-pitch"
+            data-magnetic
+            class="btn-kick btn-ghost"
             href={`tel:${phone}`}
           >
             Call Me
           </a>
         )
       }
+      <a data-magnetic class="btn-kick btn-primary" href="#contact">Contact Me</a>
       <a
-        class="inline-block rounded-full bg-floodlight px-7 py-4 text-sm leading-5 font-semibold text-pitch"
-        href="#contact">Contact Me</a
-      >
-      <a
-        class="inline-block rounded-full bg-floodlight px-7 py-4 text-sm leading-5 font-semibold text-pitch"
+        data-magnetic
+        class="btn-kick btn-ghost"
         href="/Halboup_Mohammed.pdf"
         download="Mohammed_Halboup_Resume.pdf">Download Resume</a
       >

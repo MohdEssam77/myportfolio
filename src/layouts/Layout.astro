@@ -77,9 +77,10 @@ const ogImgUrl = socialImage ? canonicalURL + socialImage : null;
     <Footer author={author} socialLinks={socialLinks} />
 
     <script>
-      import { initReveal, initSmoothScroll } from "@lib/motion";
+      import { initMagnetic, initReveal, initSmoothScroll } from "@lib/motion";
       initSmoothScroll();
       initReveal();
+      initMagnetic();
     </script>
   </body>
 </html>

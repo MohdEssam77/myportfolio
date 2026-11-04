@@ -58,3 +58,21 @@ export const initReveal = () => {
   );
   items.forEach((el) => observer.observe(el));
 };
+
+// Buttons marked [data-magnetic] lean towards the cursor.
+export const initMagnetic = () => {
+  if (prefersReducedMotion() || !window.matchMedia("(pointer: fine)").matches) return;
+  document.querySelectorAll<HTMLElement>("[data-magnetic]").forEach((el) => {
+    el.addEventListener("pointermove", (e) => {
+      const rect = el.getBoundingClientRect();
+      const x = (e.clientX - rect.left - rect.width / 2) * 0.25;
+      const y = (e.clientY - rect.top - rect.height / 2) * 0.35;
+      el.style.setProperty("--mag-x", `${x}px`);
+      el.style.setProperty("--mag-y", `${y}px`);
+    });
+    el.addEventListener("pointerleave", () => {
+      el.style.removeProperty("--mag-x");
+      el.style.removeProperty("--mag-y");
+    });
+  });
+};
