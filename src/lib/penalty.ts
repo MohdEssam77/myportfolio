@@ -161,11 +161,6 @@ const shoot = (zone: HTMLElement) => {
     dots[results.length - 1]?.setAttribute("data-result", result);
     status.textContent = pick(MESSAGES[result]);
     if (result === "goal") showFact(nextFact());
-    document.dispatchEvent(
-      new CustomEvent("matchday:sfx", {
-        detail: result === "goal" ? "goal" : "save",
-      }),
-    );
 
     setTimeout(() => {
       if (results.length >= SHOTS) {
@@ -212,7 +207,4 @@ export const openPenalty = () => {
   reset();
   dialog.showModal();
   lockScroll(true);
-  document.dispatchEvent(
-    new CustomEvent("matchday:sfx", { detail: "whistle" }),
-  );
 };

@@ -101,35 +101,6 @@ const phases = navLinks.map((link) => ({
         <li class="mt-2 xl:mt-0 xl:ml-1">
           <button
             type="button"
-            class="sound-toggle flex w-full items-center gap-2 rounded-lg px-2.5 py-2 font-mono text-xs text-muted ring-1 ring-chalk/15 transition-colors hover:text-floodlight hover:ring-floodlight/50"
-            aria-pressed="false"
-            aria-label="Stadium sound"
-            title="Stadium sound"
-            data-sound-toggle
-          >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M11 5 6 9H2v6h4l5 4z"></path>
-              <path
-                class="sound-on"
-                d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"></path>
-              <path class="sound-off" d="m22 9-6 6M16 9l6 6"></path>
-            </svg>
-            <span class="xl:hidden">Sound</span>
-          </button>
-        </li>
-        <li class="mt-2 xl:mt-0">
-          <button
-            type="button"
             class="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 font-mono text-xs text-muted ring-1 ring-chalk/15 transition-colors hover:text-floodlight hover:ring-floodlight/50"
             aria-label="Open the VAR (video assistant remote)"
             data-open-terminal
@@ -167,8 +138,6 @@ const phases = navLinks.map((link) => ({
 </header>
 
 <script>
-  import { initSound, play, setSoundEnabled, soundEnabled } from "@lib/sound";
-
   // Toggle mobile menu
   const button = document.querySelector("#menu-button");
   const menu = document.querySelector("#main-menu");
@@ -184,20 +153,6 @@ const phases = navLinks.map((link) => ({
   button?.addEventListener("click", () =>
     setMenu(!menu?.hasAttribute("data-open")),
   );
-  // Stadium sound: off until the visitor turns it on.
-  const soundToggle = document.querySelector<HTMLButtonElement>(
-    "[data-sound-toggle]",
-  );
-  const syncSound = () =>
-    soundToggle?.setAttribute("aria-pressed", `${soundEnabled()}`);
-  syncSound();
-  initSound();
-  soundToggle?.addEventListener("click", () => {
-    setSoundEnabled(!soundEnabled());
-    syncSound();
-    play("whistle");
-  });
-
   document
     .querySelector("[data-open-terminal]")
     ?.addEventListener("click", () => {
@@ -421,19 +376,6 @@ const phases = navLinks.map((link) => ({
       left: auto;
       width: 20rem;
     }
-  }
-
-  .sound-toggle .sound-on,
-  .sound-toggle[aria-pressed="true"] .sound-off {
-    display: none;
-  }
-
-  .sound-toggle[aria-pressed="true"] .sound-on {
-    display: inline;
-  }
-
-  .sound-toggle[aria-pressed="true"] {
-    color: var(--color-floodlight);
   }
 
   .nav-item.is-active {

@@ -322,7 +322,6 @@ const fields: {
   const celebrate = (name: string) => {
     const signature = form.querySelector<HTMLElement>(".signature");
     if (signature) signature.textContent = name;
-    document.dispatchEvent(new CustomEvent("matchday:sfx", { detail: "goal" }));
     if (prefersReducedMotion()) return;
 
     form.classList.remove("goal");
