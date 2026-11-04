@@ -8,8 +8,11 @@ type Props = HeaderProps;
 
 const { siteLogo, navLinks } = Astro.props;
 
+// Section anchors only exist on the home page; elsewhere link back to it.
+const onHome = Astro.url.pathname === "/";
 const phases = navLinks.map((link) => ({
   ...link,
+  href: onHome || !link.href.startsWith("#") ? link.href : `/${link.href}`,
   minute: SECTION_MINUTES[link.href.replace("#", "")],
 }));
 ---

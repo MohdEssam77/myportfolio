@@ -1,0 +1,53 @@
+---
+import Layout from "@layouts/Layout.astro";
+import "../styles/global.css";
+---
+
+<Layout>
+  <section class="grid min-h-[calc(100dvh-180px)] place-items-center py-20 text-center" id="offside">
+    <div>
+      <svg class="flag mx-auto mb-8" width="96" height="120" viewBox="0 0 96 120" fill="none" aria-hidden="true">
+        <line x1="14" y1="6" x2="14" y2="116" stroke="#e8efe9" stroke-width="5" stroke-linecap="round"></line>
+        <g class="flag-cloth">
+          <rect x="16" y="8" width="64" height="44" fill="#ffd60a"></rect>
+          <rect x="16" y="8" width="32" height="22" fill="#ff3b3b"></rect>
+          <rect x="48" y="30" width="32" height="22" fill="#ff3b3b"></rect>
+        </g>
+      </svg>
+
+      <p class="mb-4 font-mono text-xs tracking-[0.25em] text-muted uppercase">VAR review · 404</p>
+      <h1 class="font-display text-[clamp(4.5rem,18vw,11rem)] leading-[0.85] font-black text-chalk uppercase">
+        Offside!
+      </h1>
+      <p class="mx-auto mt-6 max-w-md text-base text-muted md:text-lg">
+        The linesman's flag is up. This page doesn't exist, or it strayed beyond the last defender.
+      </p>
+
+      <div class="mt-10 flex flex-wrap justify-center gap-3">
+        <a href="/" class="btn-kick btn-primary">Back to kick-off</a>
+        <button type="button" class="btn-kick btn-ghost" data-404-penalty>Take a penalty instead</button>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<script>
+  document.querySelector("[data-404-penalty]")?.addEventListener("click", () => {
+    document.dispatchEvent(new CustomEvent("matchday:penalty"));
+  });
+</script>
+
+<style>
+  .flag-cloth {
+    transform-origin: 16px 30px;
+    animation: wave 1.4s ease-in-out infinite;
+  }
+
+  @keyframes wave {
+    50% { transform: skewY(-8deg) scaleX(0.9); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .flag-cloth { animation: none; }
+  }
+</style>

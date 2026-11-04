@@ -46,7 +46,8 @@ const ogImgUrl = socialImage ? new URL(socialImage, canonicalURL).href : null;
         html.classList.add("js");
         try {
           const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
-          if (!reduced && !sessionStorage.getItem("matchday:kickoff-seen")) {
+          const home = location.pathname === "/";
+          if (home && !reduced && !sessionStorage.getItem("matchday:kickoff-seen")) {
             html.dataset.lights = "off";
             html.classList.add("intro");
             // Never leave the stadium dark if the intro script fails to load.
