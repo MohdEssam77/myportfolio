@@ -1,0 +1,172 @@
+---
+import { PLAYER } from "@ui";
+
+const prompt = `${PLAYER.uniShort.toLowerCase()}@matchday:~$`;
+---
+
+<dialog
+  class="var-terminal mx-auto mt-[12vh] w-[min(720px,calc(100vw-2rem))] bg-transparent p-0 text-chalk backdrop:bg-black/60 backdrop:backdrop-blur-[2px]"
+  aria-label="VAR terminal"
+>
+  <div
+    class="overflow-hidden rounded-2xl border border-floodlight/25 bg-[#050c09]/95 shadow-2xl"
+  >
+    <header
+      class="flex items-center gap-3 border-b border-chalk/10 px-4 py-2.5 font-mono text-[11px] text-muted"
+    >
+      <span class="flex gap-1.5" aria-hidden="true">
+        <span class="size-2.5 rounded-full bg-card-red/80"></span>
+        <span class="size-2.5 rounded-full bg-card-yellow/80"></span>
+        <span class="size-2.5 rounded-full bg-floodlight/80"></span>
+      </span>
+      <span class="flex-1 text-center tracking-[0.2em] uppercase"
+        >VAR · video assistant terminal</span
+      >
+      <kbd class="rounded border border-chalk/15 px-1.5">esc</kbd>
+    </header>
+
+    <div
+      class="var-body h-[min(420px,60vh)] overflow-y-auto px-4 py-3 font-mono text-[13px] leading-relaxed"
+      data-term-body
+    >
+      <ol class="space-y-1" data-term-log aria-live="polite"></ol>
+      <form
+        class="mt-1 flex items-center gap-2"
+        data-term-form
+        autocomplete="off"
+      >
+        <label for="var-input" class="shrink-0 text-floodlight">{prompt}</label>
+        <input
+          id="var-input"
+          class="min-w-0 flex-1 bg-transparent text-chalk caret-floodlight outline-none"
+          spellcheck="false"
+          autocapitalize="off"
+          data-term-input
+        />
+      </form>
+    </div>
+  </div>
+</dialog>
+
+<script>
+  import { lockScroll } from "@lib/motion";
+
+  const dialog = document.querySelector<HTMLDialogElement>(".var-terminal");
+  const log = document.querySelector<HTMLOListElement>("[data-term-log]");
+  const body = document.querySelector<HTMLElement>("[data-term-body]");
+  const form = document.querySelector<HTMLFormElement>("[data-term-form]");
+  const input = document.querySelector<HTMLInputElement>("[data-term-input]");
+  const promptText =
+    document.querySelector("label[for='var-input']")?.textContent ?? "$";
+
+  type Line = string | { text: string; tone?: "accent" | "muted" | "error" };
+
+  const print = (...lines: Line[]) => {
+    lines.forEach((line) => {
+      const li = document.createElement("li");
+      const { text, tone } =
+        typeof line === "string" ? { text: line, tone: undefined } : line;
+      li.textContent = text;
+      li.className =
+        "whitespace-pre-wrap " + (tone ? `term-${tone}` : "text-chalk/85");
+      log?.append(li);
+    });
+    body?.scrollTo({ top: body.scrollHeight });
+  };
+
+  const history: string[] = [];
+  let historyIndex = 0;
+
+  const run = (raw: string) => {
+    print({ text: `${promptText} ${raw}`, tone: "muted" });
+    const [cmd] = raw.trim().split(/\s+/);
+    if (!cmd) return;
+    print({ text: `command not found: ${cmd}`, tone: "error" });
+  };
+
+  const open = () => {
+    if (!dialog || dialog.open) return;
+    dialog.showModal();
+    lockScroll(true);
+    if (!log?.childElementCount) {
+      print({
+        text: "VAR check in progress… type `help` to see what I can review.",
+        tone: "accent",
+      });
+    }
+    input?.focus();
+  };
+
+  form?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    if (!input) return;
+    const value = input.value;
+    input.value = "";
+    if (value.trim()) history.push(value);
+    historyIndex = history.length;
+    run(value);
+  });
+
+  input?.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+      e.preventDefault();
+      historyIndex = Math.max(
+        0,
+        Math.min(history.length, historyIndex + (e.key === "ArrowUp" ? -1 : 1)),
+      );
+      input.value = history[historyIndex] ?? "";
+    }
+  });
+
+  dialog?.addEventListener("close", () => lockScroll(false));
+  dialog?.addEventListener(
+    "click",
+    (e) => e.target === dialog && dialog.close(),
+  );
+
+  // `/` or Ctrl/Cmd+K opens the terminal, unless someone is typing in a field.
+  document.addEventListener("keydown", (e) => {
+    const target = e.target as HTMLElement;
+    const typing = target.closest(
+      "input, textarea, select, [contenteditable='true']",
+    );
+    if (
+      (e.key === "k" && (e.ctrlKey || e.metaKey)) ||
+      (e.key === "/" && !typing)
+    ) {
+      e.preventDefault();
+      open();
+    }
+  });
+
+  document.addEventListener("matchday:terminal", open);
+</script>
+
+<style>
+  .var-body :global(.term-accent) {
+    color: var(--color-floodlight);
+  }
+  .var-body :global(.term-muted) {
+    color: var(--color-muted);
+  }
+  .var-body :global(.term-error) {
+    color: #ff8a8a;
+  }
+
+  .var-terminal[open] > div {
+    animation: var-in 220ms ease-out;
+  }
+
+  @keyframes var-in {
+    from {
+      opacity: 0;
+      transform: translateY(-12px) scale(0.98);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .var-terminal[open] > div {
+      animation: none;
+    }
+  }
+</style>
