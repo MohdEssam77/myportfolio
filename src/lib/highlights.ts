@@ -1,4 +1,12 @@
-import { prefersReducedMotion, scrollToTarget } from "./motion";
+import { prefersReducedMotion, scrollToElement, scrollToY } from "./motion";
+
+// Each stop starts right under the scoreboard: the section's first child
+// (its header) rather than the section, which begins with empty padding.
+const showStep = (id: string) => {
+  const section = document.getElementById(id);
+  if (!section || id === "hero") return scrollToY(0);
+  scrollToElement((section.firstElementChild as HTMLElement | null) ?? section);
+};
 
 interface Step {
   id: string;
@@ -53,6 +61,8 @@ export const playHighlights = async () => {
 
   root.hidden = false;
   progress.style.width = "0";
+  // Room under the page, so the banner never covers the final scoreboard.
+  document.body.style.paddingBottom = `${root.offsetHeight + 16}px`;
 
   for (const [i, step] of steps.entries()) {
     if (signal.aborted) break;
@@ -60,7 +70,7 @@ export const playHighlights = async () => {
     title.textContent = step.title;
     line.textContent = step.line;
     progress.style.width = `${((i + 1) / (steps.length + 1)) * 100}%`;
-    scrollToTarget(`#${step.id}`);
+    showStep(step.id);
     await wait(prefersReducedMotion() ? STOP_MS - 1000 : STOP_MS, signal);
   }
 
@@ -69,10 +79,13 @@ export const playHighlights = async () => {
     title.textContent = "Full time";
     line.textContent = final;
     progress.style.width = "100%";
+    // Full time is the final scoreboard at the very end of the page.
+    scrollToY(Number.POSITIVE_INFINITY);
     await wait(FINAL_MS, signal);
   }
 
   events.forEach((type) => window.removeEventListener(type, takeOver));
   root.hidden = true;
+  document.body.style.paddingBottom = "";
   running = null;
 };

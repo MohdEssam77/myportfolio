@@ -43,6 +43,41 @@ export const scrollToTarget = (target: string | HTMLElement) => {
   else el.scrollIntoView({ behavior: prefersReducedMotion() ? "auto" : "smooth" });
 };
 
+// Scrolls the page to a y position, clamped to the page.
+export const scrollToY = (y: number) => {
+  const max = document.documentElement.scrollHeight - window.innerHeight;
+  const top = Math.max(0, Math.min(y, max));
+  if (lenis) lenis.scrollTo(top);
+  else window.scrollTo({ top, behavior: prefersReducedMotion() ? "auto" : "smooth" });
+};
+
+// Document y of an element, ignoring transforms (reveal animations move
+// elements a little before they are shown).
+const pageTop = (el: HTMLElement) => {
+  let top = 0;
+  for (let node: HTMLElement | null = el; node; node = node.offsetParent as HTMLElement | null) {
+    top += node.offsetTop;
+  }
+  return top;
+};
+
+// Bottom edge of the sticky scoreboard, plus a little breathing room.
+const topbarBottom = () =>
+  (document.getElementById("scoreboard")?.getBoundingClientRect().bottom ?? 0) + 16;
+
+// "start": the element's top sits right under the scoreboard.
+// "center": the element sits in the middle of the space below it.
+export const scrollToElement = (el: HTMLElement, align: "start" | "center" = "start") => {
+  const bar = topbarBottom();
+  if (align === "start") {
+    scrollToY(pageTop(el) - bar);
+    return;
+  }
+  const rect = el.getBoundingClientRect();
+  const middle = rect.top + window.scrollY + rect.height / 2;
+  scrollToY(middle - bar - (window.innerHeight - bar) / 2);
+};
+
 // Adds `is-in` to [data-reveal] elements once they scroll into view.
 export const initReveal = () => {
   const items = document.querySelectorAll<HTMLElement>("[data-reveal]:not(.is-in)");
