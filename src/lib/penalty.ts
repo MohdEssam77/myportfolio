@@ -65,6 +65,7 @@ const els = () => {
     zones: $<HTMLElement>(d, ".pk-zones")!,
     ball: $<HTMLElement>(d, "[data-pk-ball]")!,
     keeper: $<HTMLElement>(d, "[data-pk-keeper]")!,
+    taker: $<HTMLElement>(d, "[data-pk-taker]")!,
     status: $<HTMLElement>(d, "[data-pk-status]")!,
     restart: $<HTMLButtonElement>(d, "[data-pk-restart]")!,
     unlocked: $<HTMLElement>(d, "[data-pk-unlocked]")!,
@@ -73,8 +74,22 @@ const els = () => {
   };
 };
 
+// #17 jogs back to his mark and turns to face the ball again.
+let jogTimer = 0;
+const backToMark = (taker: HTMLElement) => {
+  if (!taker.classList.contains("is-up")) return;
+  taker.classList.remove("is-up", "is-kicking");
+  taker.classList.add("is-left", "is-running");
+  clearTimeout(jogTimer);
+  jogTimer = window.setTimeout(
+    () => taker.classList.remove("is-left", "is-running"),
+    prefersReducedMotion() ? 0 : 300,
+  );
+};
+
 const reset = () => {
-  const { ball, keeper, status, restart, unlocked, fact, dots, zones } = els();
+  const { ball, keeper, taker, status, restart, unlocked, fact, dots, zones } = els();
+  backToMark(taker);
   results = [];
   busy = false;
   ball.style.transform = "";
@@ -192,9 +207,22 @@ const goToFact = (index: number) => {
 const shoot = (zone: HTMLElement) => {
   if (busy || results.length >= SHOTS) return;
   busy = true;
-  const { ball, keeper, status, zones, dots, restart } = els();
+  const { taker, zones } = els();
   zones.setAttribute("aria-disabled", "true");
 
+  // Run-up, then the kick; the ball leaves when his boot meets it.
+  const still = prefersReducedMotion();
+  taker.classList.add("is-running", "is-up");
+  setTimeout(() => {
+    taker.classList.remove("is-running", "is-kicking");
+    void taker.offsetWidth;
+    taker.classList.add("is-kicking");
+    setTimeout(() => strike(zone), still ? 0 : 150);
+  }, still ? 0 : 300);
+};
+
+const strike = (zone: HTMLElement) => {
+  const { ball, keeper, taker, status, zones, dots, restart } = els();
   const shot = Number(zone.dataset.pkZone);
   const dive = Math.floor(Math.random() * 6);
   const diveZone = $<HTMLElement>(zones, `[data-pk-zone="${dive}"]`)!;
@@ -225,6 +253,7 @@ const shoot = (zone: HTMLElement) => {
       }
       ball.style.transform = "";
       keeper.style.transform = "";
+      backToMark(taker);
       zones.removeAttribute("aria-disabled");
       busy = false;
     }, settle + 500);
