@@ -76,22 +76,55 @@ const FORMATIONS: Record<number, number[]> = {
 export interface FormationSlot {
   x: number; // % from left
   y: number; // % from top
+  rowSize: number; // players in this slot's line
 }
 
-export const formationSlots = (count: number): FormationSlot[] => {
-  const rows =
-    FORMATIONS[count] ??
-    Array.from({ length: Math.ceil(count / 4) }, (_, i) =>
-      Math.min(4, count - i * 4),
-    );
+const defaultRows = (count: number) =>
+  FORMATIONS[count] ??
+  Array.from({ length: Math.ceil(count / 4) }, (_, i) =>
+    Math.min(4, count - i * 4),
+  );
+
+// Slots for lines of players listed from the attack (top) to defence.
+export const slotsForRows = (rows: number[]): FormationSlot[] => {
   const slots: FormationSlot[] = [];
   rows.forEach((size, row) => {
     const y = rows.length === 1 ? 50 : 18 + (row * 64) / (rows.length - 1);
     for (let i = 0; i < size; i++) {
-      slots.push({ x: ((i + 1) * 100) / (size + 1), y });
+      slots.push({ x: ((i + 1) * 100) / (size + 1), y, rowSize: size });
     }
   });
   return slots;
+};
+
+export const formationSlots = (count: number) =>
+  slotsForRows(defaultRows(count));
+
+// Formations visitors can switch between on the squad pitch. `rows` are
+// listed from defence to attack, like a real team sheet ("3-3-2").
+export interface FormationOption {
+  id: string;
+  label: string;
+  rows: number[];
+  /** Put hackathon-podium projects in the front lines. */
+  podiumUpFront?: boolean;
+}
+
+export const formationOptions = (count: number): FormationOption[] => {
+  const base = [...defaultRows(count)].reverse();
+  const options: FormationOption[] = [
+    { id: "classic", label: base.join("-"), rows: base },
+    { id: "4-4", label: "4-4", rows: [4, 4] },
+    { id: "2-4-2", label: "2-4-2", rows: [2, 4, 2] },
+    { id: "podium", label: "Podium up front", rows: base, podiumUpFront: true },
+  ];
+  const seen = new Set<string>();
+  return options.filter((o) => {
+    const fits = o.rows.reduce((a, b) => a + b, 0) === count;
+    const fresh = o.podiumUpFront || !seen.has(o.label);
+    seen.add(o.label);
+    return fits && fresh;
+  });
 };
 
 // Squad numbers for projects. #17 is reserved for Mohammed.
