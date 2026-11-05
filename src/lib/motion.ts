@@ -24,7 +24,9 @@ export const initSmoothScroll = () => {
     return lenis;
   }
   lenis = new Lenis({
-    anchors: { offset: -96 },
+    // Lenis already honours the page scroll-padding-top (the scoreboard
+    // height), so anchors and scrollTo need no extra offset.
+    anchors: true,
     autoRaf: true,
     // Let overlays (VAR, game, project/match reports) and other inner scroll
     // areas scroll natively, even while the page itself is locked.
@@ -37,7 +39,7 @@ export const initSmoothScroll = () => {
 export const scrollToTarget = (target: string | HTMLElement) => {
   const el = typeof target === "string" ? document.querySelector<HTMLElement>(target) : target;
   if (!el) return;
-  if (lenis) lenis.scrollTo(el, { offset: -96 });
+  if (lenis) lenis.scrollTo(el);
   else el.scrollIntoView({ behavior: prefersReducedMotion() ? "auto" : "smooth" });
 };
 
