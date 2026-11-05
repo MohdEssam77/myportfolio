@@ -10,14 +10,17 @@ const lights = ["tl", "tr", "bl", "br"];
 </div>
 
 <script>
-  // Flare the floodlights briefly whenever a new match phase starts.
+  // Flare the floodlights briefly whenever a new match phase starts, or
+  // when a cursor shot scores on the scoreboard.
   const stadium = document.querySelector<HTMLElement>(".stadium");
-  document.addEventListener("matchday:phase", () => {
+  const flare = () => {
     if (!stadium) return;
     stadium.classList.remove("flare");
     void stadium.offsetWidth;
     stadium.classList.add("flare");
-  });
+  };
+  document.addEventListener("matchday:phase", flare);
+  document.addEventListener("matchday:goal", flare);
 </script>
 
 <style>
