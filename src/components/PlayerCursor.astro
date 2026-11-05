@@ -2,7 +2,11 @@
 import Ball from "@icons/Ball.astro";
 ---
 
-<div class="cursor-layer pointer-events-none fixed inset-0 z-[80] opacity-0" aria-hidden="true">
+<div class="cursor-layer pointer-events-none fixed inset-0 z-[80] overflow-hidden opacity-0" aria-hidden="true">
+  <!-- Before the player, so a ball rolling back passes behind his legs. -->
+  <div class="pc-ball absolute top-0 left-0" data-pc-ball>
+    <Ball size={12} />
+  </div>
   <div class="pc-player absolute top-0 left-0" data-pc-player>
     <svg class="pc-body" width="28" height="40" viewBox="0 0 28 40" fill="none">
       <g stroke="#0a1f17" stroke-width="1" stroke-linejoin="round">
@@ -27,16 +31,14 @@ import Ball from "@icons/Ball.astro";
       </g>
     </svg>
   </div>
-  <div class="pc-ball absolute top-0 left-0" data-pc-ball>
-    <Ball size={12} />
-  </div>
 </div>
 
 <script>
   import { prefersReducedMotion } from "@lib/motion";
 
-  // #17 follows the real cursor with the ball at his feet.
-  // Desktop only; it never replaces the native cursor.
+  // #17 follows the real cursor with the ball at his feet, and shoots it
+  // wherever you click. Desktop only; it never replaces the native cursor,
+  // and a click is never delayed: the shot plays alongside it.
   const layer = document.querySelector<HTMLElement>(".cursor-layer");
   const player = layer?.querySelector<HTMLElement>("[data-pc-player]");
   const ballEl = layer?.querySelector<HTMLElement>("[data-pc-ball]");
@@ -57,6 +59,35 @@ import Ball from "@icons/Ball.astro";
     let spin = 0;
     let ballX = -100;
     let ballY = -100;
+    let ballScale = 1;
+
+    // The shot: windup → flight → bounce → rest → roll back to his feet.
+    type State = "feet" | "windup" | "flight" | "bounce" | "rest" | "return";
+    let state: State = "feet";
+    let stateAt = 0;
+    let kickUntil = 0;
+    let from = { x: 0, y: 0 };
+    let to = { x: 0, y: 0 };
+    let flightMs = 0;
+    let arc = 0;
+    const STRIKE_MS = 150; // the boot meets the ball here in the kick animation
+    const setState = (next: State, now: number) => {
+      state = next;
+      stateAt = now;
+    };
+
+    const FIELD = "input, textarea, select, dialog[open]";
+
+    // Where the shot lands: a puff of grass, and an event other parts of the
+    // page can react to (the scoreboard does).
+    const land = (point: { x: number; y: number }) => {
+      const puff = document.createElement("span");
+      puff.className = "pc-puff";
+      puff.style.transform = `translate3d(${point.x}px, ${point.y}px, 0)`;
+      puff.addEventListener("animationend", () => puff.remove());
+      layer.append(puff);
+      document.dispatchEvent(new CustomEvent("matchday:shot", { detail: point }));
+    };
 
     // Where the ball rests: just in front of the front boot.
     const foot = () => ({
@@ -75,7 +106,7 @@ import Ball from "@icons/Ball.astro";
         if (e.pointerType !== "mouse") return;
         targetX = e.clientX + OFFSET.x;
         targetY = e.clientY + OFFSET.y;
-        const overField = (e.target as HTMLElement).closest("input, textarea, select, dialog[open]");
+        const overField = (e.target as HTMLElement).closest(FIELD);
         if (!visible && !overField) {
           // Appear in place instead of running in from the last spot.
           x = targetX;
@@ -89,25 +120,81 @@ import Ball from "@icons/Ball.astro";
 
     document.documentElement.addEventListener("pointerleave", () => show(false));
 
-    const frame = () => {
+    window.addEventListener(
+      "pointerdown",
+      (e) => {
+        // One shot at a time: clicks while the ball is away just click.
+        if (e.pointerType !== "mouse" || e.button !== 0 || !visible || state !== "feet") return;
+        if ((e.target as HTMLElement).closest(FIELD)) return;
+        const now = performance.now();
+        to = { x: e.clientX, y: e.clientY };
+        facing = to.x < x + SIZE.w / 2 ? -1 : 1;
+        kickUntil = now + 320;
+        setState("windup", now);
+        player.classList.remove("is-kicking");
+        void player.offsetWidth;
+        player.classList.add("is-kicking");
+        setTimeout(() => player.classList.remove("is-kicking"), 320);
+      },
+      { passive: true },
+    );
+
+    const frame = (now: number) => {
       const dx = (targetX - x) * FOLLOW;
       const dy = (targetY - y) * FOLLOW;
       x += dx;
       y += dy;
-      if (Math.abs(dx) > 0.6) facing = dx > 0 ? 1 : -1;
+      // Mid-kick he keeps facing the shot.
+      if (now > kickUntil && Math.abs(dx) > 0.6) facing = dx > 0 ? 1 : -1;
       const running = Math.hypot(dx, dy) > 0.5;
 
       player.classList.toggle("is-running", running);
       player.classList.toggle("is-left", facing === -1);
       player.style.transform = `translate3d(${x}px, ${y}px, 0) scaleX(${facing})`;
 
-      // The ball follows the boot a touch loosely, so turning drags it across.
       const at = foot();
-      const bx = (at.x - ballX) * 0.35;
-      ballX += bx;
-      ballY += (at.y - ballY) * 0.35;
-      spin += bx * 9;
-      ballEl.style.transform = `translate3d(${ballX - BALL / 2}px, ${ballY - BALL / 2}px, 0) rotate(${spin}deg)`;
+      let lift = 0;
+      ballScale = 1;
+      const elapsed = now - stateAt;
+
+      if (state === "flight") {
+        const t = Math.min(1, elapsed / flightMs);
+        const ease = 1 - (1 - t) ** 2;
+        ballX = from.x + (to.x - from.x) * ease;
+        ballY = from.y + (to.y - from.y) * ease;
+        lift = arc * 4 * t * (1 - t);
+        ballScale = 1 + 0.45 * Math.sin(Math.PI * t);
+        spin += 22 * facing;
+        if (t === 1) {
+          land(to);
+          setState("bounce", now);
+        }
+      } else if (state === "bounce") {
+        const t = Math.min(1, elapsed / 200);
+        lift = 7 * 4 * t * (1 - t);
+        spin += 6 * facing;
+        if (t === 1) setState("rest", now);
+      } else if (state === "rest") {
+        if (elapsed > 220) setState("return", now);
+      } else {
+        // At his feet (or rolling back): follows the boot a touch loosely,
+        // so turning drags the ball across.
+        const pull = state === "return" ? 0.14 : 0.35;
+        const bx = (at.x - ballX) * pull;
+        ballX += bx;
+        ballY += (at.y - ballY) * pull;
+        spin += bx * 9;
+        if (state === "return" && Math.hypot(at.x - ballX, at.y - ballY) < 3) setState("feet", now);
+        if (state === "windup" && elapsed > STRIKE_MS) {
+          from = { x: ballX, y: ballY };
+          const distance = Math.hypot(to.x - from.x, to.y - from.y);
+          flightMs = Math.min(650, Math.max(260, 220 + distance * 0.6));
+          arc = Math.min(90, 14 + distance * 0.3);
+          setState("flight", now);
+        }
+      }
+
+      ballEl.style.transform = `translate3d(${ballX - BALL / 2}px, ${ballY - BALL / 2 - lift}px, 0) rotate(${spin}deg) scale(${ballScale})`;
 
       requestAnimationFrame(frame);
     };
@@ -171,6 +258,60 @@ import Ball from "@icons/Ball.astro";
   .is-running .pc-leg-front,
   .is-running .pc-arm-back {
     animation: stride 280ms ease-in-out infinite alternate-reverse;
+  }
+
+  /* Backswing, strike, follow-through. Listed after the run cycle so the
+     kicking leg wins while he runs. */
+  .is-kicking .pc-leg-front {
+    animation: kick 320ms ease-out;
+  }
+
+  .is-kicking .pc-arm-back {
+    animation: kick-arm 320ms ease-out;
+  }
+
+  @keyframes kick {
+    35% {
+      transform: rotate(40deg);
+    }
+    50% {
+      transform: rotate(-80deg);
+    }
+  }
+
+  @keyframes kick-arm {
+    50% {
+      transform: rotate(-60deg);
+    }
+  }
+
+  /* Where the ball lands: a ring of kicked-up grass. */
+  :global(.pc-puff) {
+    position: absolute;
+    top: -14px;
+    left: -14px;
+    width: 28px;
+    height: 28px;
+  }
+
+  :global(.pc-puff)::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 9999px;
+    border: 2px solid var(--color-floodlight);
+    animation: puff 450ms ease-out forwards;
+  }
+
+  @keyframes puff {
+    from {
+      transform: scale(0.2);
+      opacity: 0.9;
+    }
+    to {
+      transform: scale(1.6);
+      opacity: 0;
+    }
   }
 
   @keyframes stride {
