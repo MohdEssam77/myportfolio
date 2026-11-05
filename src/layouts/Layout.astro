@@ -11,7 +11,7 @@ import Footer from "@components/Footer.astro";
 import Stadium from "@components/Stadium.astro";
 import PenaltyGame from "@components/PenaltyGame.astro";
 import Terminal from "@components/Terminal.astro";
-import BallCursor from "@components/BallCursor.astro";
+import PlayerCursor from "@components/PlayerCursor.astro";
 import Highlights from "@components/Highlights.astro";
 
 const {
@@ -82,7 +82,7 @@ const ogImgUrl = socialImage ? new URL(socialImage, canonicalURL).href : null;
     <Footer author={author} socialLinks={socialLinks} />
     <PenaltyGame />
     <Terminal />
-    <BallCursor />
+    <PlayerCursor />
     <Highlights />
 
     <script>
