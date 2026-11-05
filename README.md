@@ -29,10 +29,12 @@ The site is one 90-minute match. Scrolling is the match clock, and each section 
 | 55' | **Trophy Cabinet** (hackathons) | Gold/silver/bronze trophies, each opening a match report with a photo gallery |
 | 75' | **Post-match Interview** (about) | The about text types out at a press conference |
 | 85' | **Transfer Desk** (contact) | The contact form is a transfer offer: yellow card for invalid input, red card for errors, goal + confetti when sent |
-| 90+2' | **Full Time** (footer) | Final score, plus "Know more about Halboup": score a penalty to unlock a random fact |
+| 90+2' | **Full Time** (footer) | Final score, plus "Know more about Halboup": score a penalty to unlock a random fact, then "See it on the pitch" jumps to that card |
 
 Also:
 
+- ⚽ **#17 cursor** (desktop): a small player chases the pointer with the ball at his feet. Click to shoot the ball to that spot; land it on the scoreboard's score for a goal
+- 🎬 **Highlights**: a 30-second replay that scrolls through the whole match by itself
 - 🖥️ **VAR (video assistant remote)**: a terminal-style remote control, press <kbd>/</kbd> or <kbd>Ctrl</kbd>+<kbd>K</kbd> (or tap **VAR** in the scoreboard)
 - 🚩 **Custom 404**: "Offside!"
 - ♿ **Accessible**: keyboard friendly, skip link, focus rings, and full `prefers-reduced-motion` support (no intro, no parallax, no autoplaying clips)
@@ -44,6 +46,7 @@ Also:
 | Command | Does |
 |---------|------|
 | `help` | List commands |
+| `catalogue` | The matchday programme: a guided tour of every feature (also `tour`) |
 | `whoami` | Who's wearing #17 |
 | `ls projects \| hackathons \| experience` | List content |
 | `goto <section>` | Scroll to a section (`experience`, `projects`, `hackathons`, `about`, `contact`) |
