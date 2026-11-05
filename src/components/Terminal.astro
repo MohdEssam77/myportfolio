@@ -2,6 +2,7 @@
 import { SITE_CONFIG, SITE_CONTENT } from "@config";
 import { PLAYER, SKILLS, overallRating, squadNumber, trophyTier } from "@ui";
 import { EDUCATION } from "../config/career";
+import { FACTS } from "../config/facts";
 
 const { hero, projects, hackathons, experience } = SITE_CONTENT;
 const prompt = `${hero.name.split(" ")[0].toLowerCase()}@${PLAYER.uniShort.toLowerCase()}:~$`;
@@ -45,9 +46,115 @@ const career = [
   row(`#${PLAYER.number}`, PLAYER.club),
 ];
 
+// `catalogue`: the matchday programme, a guided list of what the site does.
+// `run` turns an entry into a button that runs that VAR command.
+type Entry = { name: string; text: string; run?: string };
+const catalogue = {
+  title: `MATCHDAY PROGRAMME · ${hero.name.split(" ").slice(1).join(" ").toUpperCase()} vs ${PLAYER.rival}`,
+  subtitle: "Everything on at this ground. Tap a › to try it.",
+  groups: [
+    {
+      heading: "On the pitch · scroll through the match",
+      items: [
+        {
+          name: "Scoreboard",
+          text: "The top bar. Every section you reach is a goal, and the clock runs from 0' to 90+2' as you scroll.",
+        },
+        {
+          name: "Kick-off",
+          text: "The floodlights flicker on when the page opens.",
+          run: "kickoff",
+        },
+        {
+          name: "Player card",
+          text: `#${PLAYER.number}'s ratings for languages and tools, ${overallRating()} overall. Flip it for the scouting report.`,
+        },
+        {
+          name: "Tactics board",
+          text: "Work experience drawn as a passing move: first role at the back, current club up front.",
+          run: "goto experience",
+        },
+        {
+          name: "The squad",
+          text: `${projects.length} projects as players on a pitch. Tap one to scout it, switch the formation, or use List view.`,
+          run: "goto projects",
+        },
+        {
+          name: "Half-time",
+          text: `Head-to-head stats against ${PLAYER.rival}.`,
+        },
+        {
+          name: "Trophy cabinet",
+          text: `${hackathons.length} hackathons on the shelf. Tap a trophy for its match report and photos.`,
+          run: "goto hackathons",
+        },
+        {
+          name: "Press room",
+          text: "The About me, typed out live like a post-match interview.",
+          run: "goto about",
+        },
+        {
+          name: "Transfer desk",
+          text: "Make an offer through the contact form. The referee shows a yellow card if something is missing.",
+          run: "contact",
+        },
+      ],
+    },
+    {
+      heading: "Extras",
+      items: [
+        {
+          name: "Highlights",
+          text: "No time to scroll? A 30-second replay runs through the whole match.",
+          run: "highlights",
+        },
+        {
+          name: "Penalties",
+          text: `Score to unlock one of ${FACTS.length} facts, then jump to it on the pitch.`,
+          run: "penalty",
+        },
+        {
+          name: `#${PLAYER.number} cursor`,
+          text: "On desktop a player follows your pointer. Click to shoot; land it on the scoreboard's score for a goal.",
+        },
+        {
+          name: "VAR",
+          text: "This remote. Press / anywhere to open it, Esc to close.",
+        },
+      ],
+    },
+    {
+      heading: "In the VAR",
+      items: [
+        {
+          name: "career",
+          text: "The path so far, told like a player's career page.",
+          run: "career",
+        },
+        {
+          name: "compare",
+          text: `compare <your name>: your player card against #${PLAYER.number}.`,
+          run: "compare you",
+        },
+        {
+          name: "aop",
+          text: `Who is ${PLAYER.rival}, anyway?`,
+          run: "aop",
+        },
+        {
+          name: "help",
+          text: "Every command: ls, goto, cv, whoami and more.",
+          run: "help",
+        },
+      ],
+    },
+  ] satisfies { heading: string; items: Entry[] }[],
+};
+
 // Everything the terminal prints comes from the site content.
 const data = {
   career,
+  catalogue,
   me: {
     name: hero.name.split(" ").slice(1).join(" "),
     first: hero.name.split(" ")[0],
@@ -321,11 +428,55 @@ const data = {
     });
   };
 
+  // --- catalogue: the matchday programme ----------------------------------
+
+  const showCatalogue = () => {
+    const { title, subtitle, groups } = data.catalogue;
+    const root = el("li", "catalogue my-2 space-y-4");
+    const head = el("div", "");
+    head.append(el("p", "term-accent", title), el("p", "term-muted", subtitle));
+    root.append(head);
+
+    groups.forEach((group) => {
+      const section = el("section", "");
+      section.append(
+        el("p", "mb-1.5 border-b border-chalk/10 pb-1 text-[11px] tracking-[0.2em] text-muted uppercase", group.heading),
+      );
+      const list = el("dl", "grid gap-x-4 sm:grid-cols-[8.5rem_1fr]");
+      group.items.forEach((item) => {
+        const text = el("dd", "mb-2 pl-3 text-chalk/85 sm:pl-0", item.text);
+        if (item.run) {
+          const command = item.run;
+          const button = el("button", "ml-2 whitespace-nowrap text-floodlight/80 underline-offset-2 hover:text-floodlight hover:underline", `› ${command}`);
+          (button as HTMLButtonElement).type = "button";
+          button.addEventListener("click", () => {
+            run(command);
+            input?.focus();
+          });
+          text.append(button);
+        }
+        list.append(el("dt", "text-floodlight", item.name), text);
+      });
+      section.append(list);
+      root.append(section);
+    });
+
+    log?.append(root);
+    body?.scrollTo({ top: body.scrollHeight });
+  };
+
   const history: string[] = [];
   let historyIndex = 0;
 
   type Skill = { code: string; rating: number };
+  type Entry = { name: string; text: string; run?: string };
+  type Catalogue = {
+    title: string;
+    subtitle: string;
+    groups: { heading: string; items: Entry[] }[];
+  };
   const data: {
+    catalogue: Catalogue;
     me: { name: string; first: string; overall: number; skills: Skill[] };
     career: Line[];
     aop: string[];
@@ -428,6 +579,10 @@ const data = {
       help: "compare <your name>: head-to-head player cards",
       run: compare,
     },
+    catalogue: {
+      help: "the matchday programme: everything this site can do",
+      run: showCatalogue,
+    },
     career: {
       help: "career mode: the path so far",
       run: () => printFeed(data.career),
@@ -460,6 +615,11 @@ const data = {
     hidden[name] = () => print({ text, tone: "accent" });
   });
 
+  // Other names people might try for the catalogue.
+  ["features", "tour", "programme", "program"].forEach((name) => {
+    hidden[name] = showCatalogue;
+  });
+
   const run = (raw: string) => {
     print({ text: `${promptText} ${raw}`, tone: "muted" });
     const [cmd, ...args] = raw.trim().split(/\s+/);
@@ -481,7 +641,7 @@ const data = {
     lockScroll(true);
     if (!log?.childElementCount) {
       print({
-        text: "VAR check in progress… type `help` to see what I can review.",
+        text: "VAR check in progress… type `help` to see what I can review, or `catalogue` for a tour of the site.",
         tone: "accent",
       });
     }
