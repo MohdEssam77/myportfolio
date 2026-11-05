@@ -51,6 +51,7 @@ Also:
 | `contact` | Jump to the transfer desk |
 | `aop` | Who's the opponent on the scoreboard? |
 | `career` | Career mode: academy, first team, cup runs |
+| `compare <name>` | Head-to-head player cards against #17 (try `compare aop`) |
 | `highlights` | Auto-play the 30-second match highlights |
 | `kickoff` | Replay the floodlights intro |
 | `penalty` | Score a penalty to unlock a random fact about Halboup |

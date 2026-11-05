@@ -1,6 +1,6 @@
 ---
 import { SITE_CONFIG, SITE_CONTENT } from "@config";
-import { PLAYER, squadNumber, trophyTier } from "@ui";
+import { PLAYER, SKILLS, overallRating, squadNumber, trophyTier } from "@ui";
 import { EDUCATION } from "../config/career";
 
 const { hero, projects, hackathons, experience } = SITE_CONTENT;
@@ -48,6 +48,12 @@ const career = [
 // Everything the terminal prints comes from the site content.
 const data = {
   career,
+  me: {
+    name: hero.name.split(" ").slice(1).join(" "),
+    first: hero.name.split(" ")[0],
+    overall: overallRating(),
+    skills: SKILLS.map(({ code, rating }) => ({ code, rating })),
+  },
   aop: PLAYER.rivalMeaning,
   whoami: [
     `${hero.name} · #${PLAYER.number}`,
@@ -155,10 +161,172 @@ const data = {
     lines.forEach((line, i) => setTimeout(() => print(line), i * gap));
   };
 
+  // --- compare <name>: a head-to-head player card -------------------------
+
+  // FNV-1a: the same name always gets the same card.
+  const hash = (text: string) => {
+    let h = 0x811c9dc5;
+    for (const ch of text) h = Math.imul(h ^ ch.codePointAt(0)!, 0x01000193);
+    return h >>> 0;
+  };
+
+  const POSITIONS = ["ST", "CAM", "CM", "CB", "GK", "SUB"];
+  const VERDICTS = [
+    "Strong showing, but the VAR confirms the result.",
+    "Close game. Contract talks can start at the transfer desk.",
+    "Rematch any time; the pitch is always open.",
+    "Respect. Swap shirts after the final whistle?",
+  ];
+
+  type Card = {
+    name: string;
+    overall: number;
+    position: string;
+    skills: Skill[];
+  };
+
+  const visitorCard = (name: string): Card => {
+    const h = hash(name.toLowerCase());
+    // 45-84 per skill, then pulled just below Mohammed's overall.
+    let skills = data.me.skills.map((s, i) => ({
+      code: s.code,
+      rating: 45 + ((h >>> (i * 5)) % 40),
+    }));
+    const avg = () =>
+      Math.round(skills.reduce((a, s) => a + s.rating, 0) / skills.length);
+    const cap = data.me.overall - 2 - (h % 6);
+    if (avg() > cap) {
+      const drop = avg() - cap;
+      skills = skills.map((s) => ({
+        ...s,
+        rating: Math.max(30, s.rating - drop),
+      }));
+    }
+    return {
+      name,
+      overall: avg(),
+      position: POSITIONS[h % POSITIONS.length],
+      skills,
+    };
+  };
+
+  const el = (tag: string, className: string, text?: string) => {
+    const node = document.createElement(tag);
+    node.className = className;
+    if (text !== undefined) node.textContent = text;
+    return node;
+  };
+
+  const renderCard = (card: Card, winner: boolean) => {
+    const root = el(
+      "div",
+      `h2h-card rounded-xl border p-3 ${winner ? "border-floodlight/60 bg-turf/60" : "border-chalk/15 bg-turf/30"}`,
+    );
+    const top = el("div", "flex items-start justify-between gap-2");
+    const rating = el("div", "");
+    rating.append(
+      el(
+        "p",
+        `font-display text-3xl leading-none font-black ${winner ? "text-floodlight" : "text-chalk"}`,
+        `${card.overall}`,
+      ),
+      el(
+        "p",
+        "mt-0.5 text-[10px] tracking-widest text-muted uppercase",
+        `OVR · ${card.position}`,
+      ),
+    );
+    top.append(rating);
+    if (winner)
+      top.append(
+        el(
+          "span",
+          "rounded bg-floodlight px-1.5 text-[10px] font-medium text-pitch",
+          "WIN",
+        ),
+      );
+    root.append(
+      top,
+      el(
+        "p",
+        "mt-2 truncate font-display text-lg leading-tight font-black text-chalk uppercase",
+        card.name,
+      ),
+    );
+
+    const list = el("div", "mt-2 space-y-1");
+    card.skills.forEach((s) => {
+      const row = el("div", "flex items-center gap-2 text-[11px]");
+      const bar = el(
+        "span",
+        "h-1 flex-1 overflow-hidden rounded-full bg-chalk/10",
+      );
+      const fill = el(
+        "span",
+        `block h-full rounded-full ${winner ? "bg-floodlight" : "bg-chalk/50"}`,
+      );
+      fill.style.width = `${s.rating}%`;
+      bar.append(fill);
+      row.append(
+        el("span", "w-7 text-muted", s.code),
+        el("span", "w-6 text-right text-chalk", `${s.rating}`),
+        bar,
+      );
+      list.append(row);
+    });
+    root.append(list);
+    return root;
+  };
+
+  const compare = (args: string[]) => {
+    const name = args.join(" ").trim().slice(0, 24);
+    if (!name) {
+      print({ text: "usage: compare <your name>", tone: "muted" });
+      return;
+    }
+    const lower = name.toLowerCase();
+    if (
+      [data.me.name, data.me.first, `${data.me.first} ${data.me.name}`].some(
+        (n) => n.toLowerCase() === lower,
+      )
+    ) {
+      print({ text: `Nice try. There is only one #17.`, tone: "accent" });
+      return;
+    }
+    const me: Card = {
+      name: data.me.name,
+      overall: data.me.overall,
+      position: "FS",
+      skills: data.me.skills,
+    };
+    const them: Card =
+      lower === "aop"
+        ? {
+            name: "AOP",
+            overall: 0,
+            position: "N/A",
+            skills: data.me.skills.map((s) => ({ code: s.code, rating: 0 })),
+          }
+        : visitorCard(name);
+
+    const li = el("li", "h2h my-2 grid grid-cols-2 gap-3");
+    li.append(renderCard(me, true), renderCard(them, false));
+    log?.append(li);
+    print({
+      text:
+        them.overall === 0
+          ? `Full time: ${me.name.toUpperCase()} ${me.overall}–0 AOP. As always.`
+          : `Full time: ${me.name.toUpperCase()} ${me.overall}–${them.overall} ${name.toUpperCase()}. ${VERDICTS[hash(lower) % VERDICTS.length]}`,
+      tone: "accent",
+    });
+  };
+
   const history: string[] = [];
   let historyIndex = 0;
 
+  type Skill = { code: string; rating: number };
   const data: {
+    me: { name: string; first: string; overall: number; skills: Skill[] };
     career: Line[];
     aop: string[];
     whoami: string[];
@@ -256,6 +424,10 @@ const data = {
       },
     },
     clear: { help: "clear the screen", run: () => log?.replaceChildren() },
+    compare: {
+      help: "compare <your name>: head-to-head player cards",
+      run: compare,
+    },
     career: {
       help: "career mode: the path so far",
       run: () => printFeed(data.career),
