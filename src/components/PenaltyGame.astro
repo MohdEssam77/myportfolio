@@ -1,6 +1,22 @@
 ---
 import Ball from "@icons/Ball.astro";
+import { SITE_CONTENT } from "@config";
 import { FACTS } from "../config/facts";
+
+// Where each fact lives on the page: its index in the content lists, which
+// is how the cards are numbered (#role-0, data-project="0", data-trophy="0").
+const lists = {
+  Experience: SITE_CONTENT.experience.map((e) => e.position),
+  Project: SITE_CONTENT.projects.map((p) => p.name),
+  Hackathon: SITE_CONTENT.hackathons.map((h) => h.name),
+};
+const spots = FACTS.map((fact) => {
+  const index = lists[fact.kind].indexOf(fact.ref);
+  if (index < 0) {
+    throw new Error(`facts.ts: "${fact.ref}" is not a ${fact.kind.toLowerCase()} in the site content`);
+  }
+  return index;
+});
 
 const zones = [
   "Top left",
@@ -15,6 +31,7 @@ const zones = [
 <dialog
   class="penalty-dialog m-auto w-[min(640px,calc(100vw-2rem))] bg-transparent p-0 text-chalk backdrop:bg-black/80 backdrop:backdrop-blur-sm"
   aria-label="Know more about Halboup: penalty shootout"
+  data-spots={JSON.stringify(spots)}
 >
   <div class="rounded-3xl border border-floodlight/30 bg-pitch p-5 sm:p-6">
     <header class="mb-4 flex items-center justify-between gap-4">

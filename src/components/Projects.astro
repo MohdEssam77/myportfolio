@@ -286,7 +286,10 @@ const players = projects.map((project, i) => {
     <ul class="view-list grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
       {
         players.map((p) => (
-          <li class="list-card group flex flex-col overflow-hidden rounded-2xl border border-chalk/10 bg-turf/40 transition-colors hover:border-floodlight/40">
+          <li
+            class="list-card group flex flex-col overflow-hidden rounded-2xl border border-chalk/10 bg-turf/40 transition-colors hover:border-floodlight/40"
+            data-list-card={p.index}
+          >
             <div class="relative overflow-hidden bg-pitch">
               <Media
                 class="aspect-[736/483] w-full object-cover object-left-top transition-transform duration-500 group-hover:scale-105"

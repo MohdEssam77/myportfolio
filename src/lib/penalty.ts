@@ -1,5 +1,5 @@
 import { FACTS, type Fact } from "../config/facts";
-import { lockScroll, prefersReducedMotion, scrollToTarget } from "./motion";
+import { lockScroll, prefersReducedMotion, scrollToElement, scrollToTarget } from "./motion";
 
 type Result = "goal" | "save" | "miss";
 
@@ -13,6 +13,8 @@ const $ = <T extends Element>(root: ParentNode, sel: string) =>
 let dialog: HTMLDialogElement | null = null;
 let results: Result[] = [];
 let busy = false;
+// Index of each fact's card in its content list (see PenaltyGame.astro).
+let spots: number[] = [];
 
 const load = (key: string): number[] => {
   try {
@@ -43,7 +45,7 @@ const shuffled = (items: number[]) => {
 // Shuffle bag: every fact shows once, in random order, before any repeats.
 // The bag survives reloads, and a fresh bag never starts with the last fact.
 let lastFact = -1;
-const nextFact = (): Fact => {
+const nextFact = (): number => {
   let bag = load(BAG_KEY);
   if (bag.length === 0) {
     bag = shuffled(FACTS.map((_, i) => i));
@@ -53,7 +55,7 @@ const nextFact = (): Fact => {
   lastFact = index;
   save(BAG_KEY, bag);
   save(SEEN_KEY, [...new Set([...load(SEEN_KEY), index])]);
-  return FACTS[index];
+  return index;
 };
 
 const els = () => {
@@ -121,19 +123,70 @@ const MESSAGES: Record<Result, string[]> = {
 
 const pick = (list: string[]) => list[Math.floor(Math.random() * list.length)];
 
-const showFact = (f: Fact) => {
+const showFact = (index: number) => {
+  const f = FACTS[index];
   const { fact, unlocked } = els();
   $<HTMLElement>(fact, "[data-pk-fact-kind]")!.textContent =
     `Did you know? · ${f.kind}`;
   $<HTMLElement>(fact, "[data-pk-fact-title]")!.textContent = f.title;
   $<HTMLElement>(fact, "[data-pk-fact-text]")!.textContent = f.text;
-  $<HTMLAnchorElement>(fact, "[data-pk-fact-link]")!.dataset.section =
-    f.section;
+  $<HTMLAnchorElement>(fact, "[data-pk-fact-link]")!.dataset.fact = `${index}`;
   // Re-trigger the entrance animation for consecutive goals.
   fact.hidden = true;
   void fact.offsetWidth;
   fact.hidden = false;
   unlocked.textContent = `${load(SEEN_KEY).length}`;
+};
+
+// "See it on the pitch": the card on the page that a fact talks about.
+const shown = (el: Element | null | undefined): el is HTMLElement =>
+  !!el && el.getClientRects().length > 0;
+
+const findCard = (f: Fact, i: number) => {
+  if (f.kind === "Experience") {
+    const card = document.getElementById(`role-${i}`);
+    return card && { card, mark: card, focus: card, align: "start" as const };
+  }
+  if (f.kind === "Project") {
+    // The pitch on desktop, the vertical pitch on phones, or the list view.
+    const card = [
+      ...document.querySelectorAll<HTMLElement>(`[data-project="${i}"], [data-list-card="${i}"]`),
+    ].find(shown);
+    if (!card) return null;
+    const mark = card.querySelector<HTMLElement>(".jersey") ?? card;
+    return { card, mark, focus: card, align: "center" as const };
+  }
+  const button = document.querySelector<HTMLElement>(`[data-trophy="${i}"]`);
+  const slot = button?.closest("li");
+  if (!button || !slot) return null;
+  // On phones the shelf scrolls sideways: bring the trophy to its middle.
+  const shelf = slot.parentElement;
+  if (shelf && shelf.scrollWidth > shelf.clientWidth) {
+    shelf.scrollTo({
+      left: slot.offsetLeft - (shelf.clientWidth - slot.offsetWidth) / 2,
+      behavior: prefersReducedMotion() ? "auto" : "smooth",
+    });
+  }
+  const mark = slot.querySelector<HTMLElement>(".plaque") ?? slot;
+  return { card: slot, mark, focus: button, align: "center" as const };
+};
+
+const goToFact = (index: number) => {
+  const f = FACTS[index];
+  const found = f && findCard(f, spots[index] ?? -1);
+  if (!found) {
+    if (f) scrollToTarget(f.section);
+    return;
+  }
+  scrollToElement(found.card, found.align);
+  if (!found.focus.matches("a, button")) found.focus.tabIndex = -1;
+  // Focus follows for keyboard and screen-reader users; the spotlight
+  // already shows where it went, so no second focus ring.
+  found.focus.focus({ preventScroll: true, focusVisible: false } as FocusOptions);
+  found.mark.classList.remove("spotlit");
+  void found.mark.offsetWidth;
+  found.mark.classList.add("spotlit");
+  setTimeout(() => found.mark.classList.remove("spotlit"), 4000);
 };
 
 const shoot = (zone: HTMLElement) => {
@@ -181,15 +234,21 @@ const shoot = (zone: HTMLElement) => {
 const bind = () => {
   dialog = document.querySelector<HTMLDialogElement>(".penalty-dialog");
   if (!dialog) return;
+  try {
+    spots = JSON.parse(dialog.dataset.spots ?? "[]");
+  } catch {}
   dialog
     .querySelectorAll<HTMLElement>("[data-pk-zone]")
     .forEach((zone) => zone.addEventListener("click", () => shoot(zone)));
   $(dialog, "[data-pk-restart]")?.addEventListener("click", reset);
   $(dialog, "[data-pk-fact-link]")?.addEventListener("click", (e) => {
     e.preventDefault();
-    const section = (e.currentTarget as HTMLElement).dataset.section;
+    const index = Number((e.currentTarget as HTMLElement).dataset.fact);
     dialog?.close();
-    if (section) scrollToTarget(section);
+    // Unlock now: the dialog's close event comes later, and a locked page
+    // ignores scrolling.
+    lockScroll(false);
+    requestAnimationFrame(() => goToFact(index));
   });
   $(dialog, "[data-pk-close]")?.addEventListener("click", () =>
     dialog?.close(),

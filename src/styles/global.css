@@ -137,6 +137,21 @@ html.scroll-locked {
   overflow: hidden;
 }
 
+/* "See it on the pitch": a pulsing ring around the card a penalty fact is
+   about. Under reduced motion the ring just stays still. */
+.spotlit {
+  outline: 3px solid var(--color-floodlight);
+  outline-offset: 4px;
+  animation: spotlit 0.8s ease-in-out 4 alternate;
+}
+
+@keyframes spotlit {
+  to {
+    outline-color: rgb(200 255 61 / 0.35);
+    outline-offset: 10px;
+  }
+}
+
 /* Accessibility. In the base layer so components that style their own
    focus state (e.g. `outline-none` on the VAR and contract inputs) win. */
 @layer base {
