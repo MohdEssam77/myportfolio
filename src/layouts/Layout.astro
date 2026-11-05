@@ -12,6 +12,7 @@ import Stadium from "@components/Stadium.astro";
 import PenaltyGame from "@components/PenaltyGame.astro";
 import Terminal from "@components/Terminal.astro";
 import BallCursor from "@components/BallCursor.astro";
+import Highlights from "@components/Highlights.astro";
 
 const {
   title,
@@ -82,6 +83,7 @@ const ogImgUrl = socialImage ? new URL(socialImage, canonicalURL).href : null;
     <PenaltyGame />
     <Terminal />
     <BallCursor />
+    <Highlights />
 
     <script>
       import { initAutoplayVideos, initMagnetic, initReveal, initSmoothScroll } from "@lib/motion";

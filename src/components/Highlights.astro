@@ -1,0 +1,136 @@
+---
+import { SITE_CONTENT } from "@config";
+import {
+  PLAYER,
+  SECTION_LABELS,
+  SECTION_MINUTES,
+  deriveStats,
+  trophyTier,
+} from "@ui";
+
+// The highlights reel: one stop per section, with a commentary line built
+// from the site content.
+const { hero, experience, projects, hackathons } = SITE_CONTENT;
+const stats = deriveStats(SITE_CONTENT);
+const tiers = hackathons.map((h) => trophyTier(h.rank));
+const count = (tier: string) => tiers.filter((t) => t === tier).length;
+const lastName = hero.name.split(" ").slice(1).join(" ").toUpperCase();
+const finalScore = Object.keys(SECTION_MINUTES).length - 1;
+
+const steps = [
+  {
+    id: "hero",
+    title: "Kick-off",
+    line: `${hero.name}, #${PLAYER.number}, takes the field.`,
+  },
+  {
+    id: "experience",
+    line: `Build-up play: ${stats.roles} roles, currently at ${experience[0].company}.`,
+  },
+  {
+    id: "projects",
+    line: `${stats.projects} projects on the pitch, ${stats.podiums} of them reached a hackathon podium.`,
+  },
+  {
+    id: "stats",
+    line: `Half-time: ${stats.podiums} podium finishes, ${stats.wins} win. ${PLAYER.rival} still on zero.`,
+  },
+  {
+    id: "hackathons",
+    line: `The cabinet: ${count("gold")} gold, ${count("silver")} silver, ${count("bronze")} bronze.`,
+  },
+  { id: "about", line: "Post-match interview with the player of the match." },
+  { id: "contact", line: "The transfer window is open. Make an offer!" },
+].map((step) => ({
+  ...step,
+  minute: SECTION_MINUTES[step.id] ?? 0,
+  title: step.title ?? SECTION_LABELS[step.id] ?? step.id,
+}));
+
+const reel = {
+  steps,
+  final: `Full time: ${lastName} ${finalScore}–0 ${PLAYER.rival}. ${projects.length} projects, ${hackathons.length} hackathons.`,
+};
+---
+
+<div
+  class="highlights pointer-events-none fixed inset-x-0 bottom-4 z-[60] flex justify-center px-3"
+  data-highlights={JSON.stringify(reel)}
+  hidden
+>
+  <div
+    class="pointer-events-auto w-full max-w-2xl overflow-hidden rounded-2xl border border-chalk/10 bg-pitch/95 shadow-[0_20px_60px_-10px_rgb(0_0_0/0.8)] backdrop-blur-md"
+    role="status"
+    aria-live="polite"
+  >
+    <div class="flex items-stretch">
+      <span
+        class="flex items-center gap-1.5 bg-card-red px-2.5 font-mono text-[11px] font-medium tracking-widest text-white uppercase sm:px-3"
+      >
+        <span class="replay-dot size-1.5 rounded-full bg-white"></span><span class="sr-only sm:not-sr-only">Replay</span>
+      </span>
+      <span
+        class="grid min-w-11 place-items-center bg-floodlight px-1.5 font-mono text-xs font-medium text-pitch sm:min-w-14 sm:px-2"
+        data-hl-minute
+      >
+        0'
+      </span>
+      <div class="min-w-0 flex-1 px-3 py-2.5 sm:px-4">
+        <p
+          class="truncate font-display text-lg leading-tight font-black tracking-wide text-chalk uppercase"
+          data-hl-title
+        >
+          Kick-off
+        </p>
+        <p class="text-xs text-muted sm:text-sm" data-hl-line></p>
+      </div>
+      <button
+        type="button"
+        class="shrink-0 border-l border-chalk/10 px-3 font-mono text-xs text-muted transition-colors hover:text-floodlight sm:px-4"
+        aria-label="Skip highlights"
+        data-hl-stop
+      >
+        <span class="hidden sm:inline">Skip </span>✕
+      </button>
+    </div>
+    <div class="h-1 bg-chalk/10" aria-hidden="true">
+      <div class="hl-progress h-full bg-floodlight" data-hl-progress></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // The reel itself is only downloaded when someone presses play.
+  document.addEventListener("matchday:highlights", async () => {
+    const { playHighlights } = await import("@lib/highlights");
+    playHighlights();
+  });
+</script>
+
+<style>
+  .highlights:not([hidden]) > div {
+    animation: hl-in 400ms cubic-bezier(0.2, 1.2, 0.4, 1);
+  }
+
+  @keyframes hl-in {
+    from {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+  }
+
+  .hl-progress {
+    width: 0;
+    transition: width 600ms ease;
+  }
+
+  .replay-dot {
+    animation: replay-blink 1.2s steps(1) infinite;
+  }
+
+  @keyframes replay-blink {
+    50% {
+      opacity: 0;
+    }
+  }
+</style>

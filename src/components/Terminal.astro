@@ -201,6 +201,13 @@ const data = {
       },
     },
     clear: { help: "clear the screen", run: () => log?.replaceChildren() },
+    highlights: {
+      help: "watch the 30-second match highlights",
+      run: () => {
+        dialog?.close();
+        document.dispatchEvent(new CustomEvent("matchday:highlights"));
+      },
+    },
     aop: {
       help: "what does AOP mean?",
       run: () => {

@@ -14,8 +14,12 @@ const lastName = rest.join(" ");
   id="hero"
 >
   <div class="relative z-10">
-    <p class="mb-6 flex items-center gap-3 font-mono text-xs tracking-[0.25em] text-muted uppercase">
-      <span class="inline-flex items-center gap-2 rounded bg-card-red/15 px-2 py-1 text-card-red">
+    <p
+      class="mb-6 flex items-center gap-3 font-mono text-xs tracking-[0.25em] text-muted uppercase"
+    >
+      <span
+        class="inline-flex items-center gap-2 rounded bg-card-red/15 px-2 py-1 text-card-red"
+      >
         <span class="size-1.5 rounded-full bg-card-red"></span>Live
       </span>
       Kick-off · #{PLAYER.number}
@@ -25,14 +29,19 @@ const lastName = rest.join(" ");
       class="hero-name mb-5 font-display leading-[0.9] font-black tracking-tight text-chalk uppercase"
       aria-label={name}
     >
-      <span class="slam block text-[clamp(4.5rem,15vw,10.5rem)] lg:text-[clamp(5rem,9.5vw,10.5rem)]">{firstName}</span>
       <span
-        class="slam slam-late outline-text block text-[clamp(4.5rem,15vw,10.5rem)] lg:text-[clamp(5rem,9.5vw,10.5rem)] text-transparent"
+        class="slam block text-[clamp(4.5rem,15vw,10.5rem)] lg:text-[clamp(5rem,9.5vw,10.5rem)]"
+        >{firstName}</span
+      >
+      <span
+        class="slam slam-late outline-text block text-[clamp(4.5rem,15vw,10.5rem)] text-transparent lg:text-[clamp(5rem,9.5vw,10.5rem)]"
         >{lastName}</span
       >
     </h1>
 
-    <p class="mb-6 font-display text-4xl font-bold tracking-wide text-floodlight uppercase sm:text-5xl">
+    <p
+      class="mb-6 font-display text-4xl font-bold tracking-wide text-floodlight uppercase sm:text-5xl"
+    >
       {specialty}
     </p>
     <p class="mb-10 max-w-xl text-base text-muted md:text-lg">
@@ -42,16 +51,14 @@ const lastName = rest.join(" ");
     <div class="flex flex-wrap gap-3">
       {
         phone && (
-          <a
-            data-magnetic
-            class="btn-kick btn-ghost"
-            href={`tel:${phone}`}
-          >
+          <a data-magnetic class="btn-kick btn-ghost" href={`tel:${phone}`}>
             Call Me
           </a>
         )
       }
-      <a data-magnetic class="btn-kick btn-primary" href="#contact">Contact Me</a>
+      <a data-magnetic class="btn-kick btn-primary" href="#contact"
+        >Contact Me</a
+      >
       <a
         data-magnetic
         class="btn-kick btn-ghost"
@@ -59,6 +66,22 @@ const lastName = rest.join(" ");
         download="Mohammed_Halboup_Resume.pdf">Download Resume</a
       >
     </div>
+
+    <button
+      type="button"
+      class="group mt-6 inline-flex items-center gap-2.5 font-mono text-xs tracking-wide text-muted transition-colors hover:text-chalk"
+      data-play-highlights
+    >
+      <span
+        class="grid size-7 place-items-center rounded-full bg-chalk/10 text-floodlight transition-colors group-hover:bg-floodlight group-hover:text-pitch"
+        aria-hidden="true"
+      >
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor"
+          ><path d="M2 1l7 4-7 4z"></path></svg
+        >
+      </span>
+      No time to scroll? Watch the 30-second highlights
+    </button>
   </div>
 
   <div class="relative flex justify-center lg:justify-end" data-card-slot>
@@ -79,6 +102,12 @@ const lastName = rest.join(" ");
 <script>
   import { autoKickoff } from "@lib/kickoff";
   autoKickoff();
+
+  document
+    .querySelector("[data-play-highlights]")
+    ?.addEventListener("click", () => {
+      document.dispatchEvent(new CustomEvent("matchday:highlights"));
+    });
 
   // The scroll cue only belongs to the kick-off screen: hide it as soon as
   // the visitor starts scrolling, bring it back only at the very top.
@@ -127,12 +156,19 @@ const lastName = rest.join(" ");
   }
 
   @keyframes roll {
-    0%, 100% { transform: translateX(0) rotate(0deg); }
-    50% { transform: translateX(74px) rotate(385deg); }
+    0%,
+    100% {
+      transform: translateX(0) rotate(0deg);
+    }
+    50% {
+      transform: translateX(74px) rotate(385deg);
+    }
   }
 
   .scroll-cue {
-    transition: opacity 300ms ease, visibility 300ms;
+    transition:
+      opacity 300ms ease,
+      visibility 300ms;
   }
 
   .scroll-cue.is-gone {
@@ -141,12 +177,20 @@ const lastName = rest.join(" ");
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .scroll-cue { display: none; }
+    .scroll-cue {
+      display: none;
+    }
   }
 
   @keyframes impact {
-    25% { transform: translate(-3px, 2px); }
-    50% { transform: translate(3px, -2px); }
-    75% { transform: translate(-1px, 1px); }
+    25% {
+      transform: translate(-3px, 2px);
+    }
+    50% {
+      transform: translate(3px, -2px);
+    }
+    75% {
+      transform: translate(-1px, 1px);
+    }
   }
 </style>
