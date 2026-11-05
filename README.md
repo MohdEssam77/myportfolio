@@ -50,6 +50,7 @@ Also:
 | `cv` | Download the resume |
 | `contact` | Jump to the transfer desk |
 | `aop` | Who's the opponent on the scoreboard? |
+| `career` | Career mode: academy, first team, cup runs |
 | `highlights` | Auto-play the 30-second match highlights |
 | `kickoff` | Replay the floodlights intro |
 | `penalty` | Score a penalty to unlock a random fact about Halboup |

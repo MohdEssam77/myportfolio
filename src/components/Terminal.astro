@@ -1,12 +1,53 @@
 ---
 import { SITE_CONFIG, SITE_CONTENT } from "@config";
-import { PLAYER, squadNumber } from "@ui";
+import { PLAYER, squadNumber, trophyTier } from "@ui";
+import { EDUCATION } from "../config/career";
 
 const { hero, projects, hackathons, experience } = SITE_CONTENT;
 const prompt = `${hero.name.split(" ")[0].toLowerCase()}@${PLAYER.uniShort.toLowerCase()}:~$`;
 
+// `career`: the path so far, told like a player's career page.
+const startTime = (date: string) => Date.parse(`1 ${date.replace(",", "")}`);
+const monthYear = (date: string) => {
+  const time = startTime(date);
+  return Number.isNaN(time)
+    ? date.trim()
+    : new Date(time).toLocaleString("en-US", {
+        month: "short",
+        year: "numeric",
+      });
+};
+const MEDALS = { gold: "🥇", silver: "🥈", bronze: "🥉", medal: "🏅" };
+const place = (rank?: string) => rank?.match(/1st|2nd|3rd/i)?.[0] ?? rank ?? "";
+const row = (when: string, text: string) => `  ${when.padEnd(11)}${text}`;
+
+const career = [
+  { text: `CAREER MODE · ${hero.name} #${PLAYER.number}`, tone: "accent" },
+  { text: "YOUTH ACADEMY", tone: "muted" },
+  ...EDUCATION.map((e) => row(e.when, e.text)),
+  { text: "FIRST TEAM", tone: "muted" },
+  ...[...experience]
+    .sort((a, b) => startTime(a.startDate) - startTime(b.startDate))
+    .map((e) =>
+      row(
+        monthYear(e.startDate),
+        `${e.position.replace(/\s*\(.*\)\s*$/, "")} @ ${e.company}${e.endDate.trim() === "Present" ? "  ← current club" : ""}`,
+      ),
+    ),
+  { text: "CUP RUNS", tone: "muted" },
+  ...hackathons.map((h) =>
+    row(
+      `${MEDALS[trophyTier(h.rank)]} ${place(h.rank)}`,
+      `${h.name} · ${h.location}`,
+    ),
+  ),
+  { text: "ALSO PLAYS FOR", tone: "muted" },
+  row(`#${PLAYER.number}`, PLAYER.club),
+];
+
 // Everything the terminal prints comes from the site content.
 const data = {
+  career,
   aop: PLAYER.rivalMeaning,
   whoami: [
     `${hero.name} · #${PLAYER.number}`,
@@ -75,7 +116,11 @@ const data = {
 </dialog>
 
 <script>
-  import { lockScroll, scrollToTarget } from "@lib/motion";
+  import {
+    lockScroll,
+    prefersReducedMotion,
+    scrollToTarget,
+  } from "@lib/motion";
   import { playKickoff } from "@lib/kickoff";
 
   const dialog = document.querySelector<HTMLDialogElement>(".var-terminal");
@@ -101,10 +146,20 @@ const data = {
     body?.scrollTo({ top: body.scrollHeight });
   };
 
+  // Prints lines one after another, like a commentary feed.
+  const printFeed = (lines: Line[], gap = 55) => {
+    if (prefersReducedMotion()) {
+      print(...lines);
+      return;
+    }
+    lines.forEach((line, i) => setTimeout(() => print(line), i * gap));
+  };
+
   const history: string[] = [];
   let historyIndex = 0;
 
   const data: {
+    career: Line[];
     aop: string[];
     whoami: string[];
     projects: string[];
@@ -201,6 +256,10 @@ const data = {
       },
     },
     clear: { help: "clear the screen", run: () => log?.replaceChildren() },
+    career: {
+      help: "career mode: the path so far",
+      run: () => printFeed(data.career),
+    },
     highlights: {
       help: "watch the 30-second match highlights",
       run: () => {
