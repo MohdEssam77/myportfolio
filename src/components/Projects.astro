@@ -1,6 +1,7 @@
 ---
 import Section from "./Section.astro";
 import Media from "./Media.astro";
+import DressingRoom from "./DressingRoom.astro";
 import type { ProjectProps } from "@types";
 import { SITE_CONTENT } from "@config";
 import {
@@ -75,7 +76,9 @@ const players = projects.map((project, i) => {
     data-layouts={JSON.stringify(layouts)}
     data-captions={JSON.stringify(captions)}
   >
-    <div class="squad-toolbar mb-6 flex items-center justify-between gap-4">
+    <div
+      class="squad-toolbar mb-6 flex flex-wrap items-center justify-between gap-3"
+    >
       <p class="font-mono text-xs whitespace-nowrap text-muted">
         <span class="text-floodlight">$</span> ls ./squad
         <span class="hidden text-chalk/50 sm:inline"
@@ -92,6 +95,12 @@ const players = projects.map((project, i) => {
           class="view-btn rounded-full px-4 py-2"
           data-view-btn="tactics"
           aria-pressed="true">Tactics</button
+        >
+        <button
+          type="button"
+          class="view-btn rounded-full px-3 py-2 whitespace-nowrap sm:px-4"
+          data-view-btn="dressing"
+          aria-pressed="false">Dressing room</button
         >
         <button
           type="button"
@@ -283,6 +292,10 @@ const players = projects.map((project, i) => {
       }
     </div>
 
+    <div class="view-dressing">
+      <DressingRoom players={players} />
+    </div>
+
     <ul class="view-list grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
       {
         players.map((p) => (
@@ -423,7 +436,7 @@ const players = projects.map((project, i) => {
 <script>
   import { lockScroll } from "@lib/motion";
 
-  // Tactics / List toggle, remembered per visitor.
+  // Tactics / Dressing room / List toggle, remembered per visitor.
   const VIEW_KEY = "matchday:squad-view";
   const squad = document.querySelector<HTMLElement>("[data-squad]");
   const viewButtons =
@@ -442,7 +455,8 @@ const players = projects.map((project, i) => {
 
   try {
     const saved = localStorage.getItem(VIEW_KEY);
-    if (saved === "list" || saved === "tactics") setView(saved);
+    if (saved === "list" || saved === "tactics" || saved === "dressing")
+      setView(saved);
   } catch {}
   viewButtons.forEach((b) =>
     b.addEventListener("click", () => setView(b.dataset.viewBtn ?? "tactics")),
@@ -507,6 +521,12 @@ const players = projects.map((project, i) => {
 
   dialog?.addEventListener("close", () => lockScroll(false));
 
+  // The dressing room's shirts ask for a scouting report this way.
+  document.addEventListener("matchday:scout", (e) => {
+    const { index } = (e as CustomEvent<{ index?: string }>).detail ?? {};
+    if (index !== undefined) openScout(index);
+  });
+
   document.querySelectorAll<HTMLElement>("[data-project]").forEach((el) => {
     el.addEventListener("click", () => openScout(el.dataset.project ?? ""));
   });
@@ -550,18 +570,20 @@ const players = projects.map((project, i) => {
     --tw-ring-color: var(--color-floodlight);
   }
 
-  [data-view="tactics"] .view-list,
-  [data-view="list"] .view-tactics {
+  .squad:not([data-view="tactics"]) .view-tactics,
+  .squad:not([data-view="dressing"]) .view-dressing,
+  .squad:not([data-view="list"]) .view-list {
     display: none;
   }
 
   /* Without JS there is no toggle or dialog, so show the plain list. */
   :global(html:not(.js)) .squad-toolbar,
-  :global(html:not(.js)) .view-tactics {
+  :global(html:not(.js)) .view-tactics,
+  :global(html:not(.js)) .view-dressing {
     display: none;
   }
 
-  :global(html:not(.js)) .view-list {
+  :global(html:not(.js)) .squad .view-list {
     display: grid;
   }
 

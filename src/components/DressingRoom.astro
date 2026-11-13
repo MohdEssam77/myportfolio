@@ -1,0 +1,492 @@
+---
+import Ball from "@icons/Ball.astro";
+
+// The squad as shirts hanging in the home dressing room. Each shirt hangs
+// showing its front; hover (or the first tap on touch screens) turns it
+// round to show the name and number on the back, and a click opens the
+// scouting report.
+interface Props {
+  players: {
+    index: number;
+    number: number;
+    podium: boolean;
+    shortName: string;
+  }[];
+}
+
+const { players } = Astro.props;
+
+// One shirt outline (viewBox 0 0 200 230), with a deeper neckline at the front.
+const shirtPath = (dip: number) =>
+  `M78 32 Q100 ${dip} 122 32 L160 44 Q178 62 194 92 L170 108 L152 90 L154 220 Q100 227 46 220 L48 90 L30 108 L6 92 Q22 62 40 44 Z`;
+const FRONT = shirtPath(62);
+const BACK = shirtPath(42);
+
+// Names are printed in an arc over the shoulders; long ones get squeezed.
+const nameFit = (name: string) => {
+  const size = Math.min(24, 230 / name.length);
+  const width = name.length * size * 0.52;
+  return width > 108 ? { size, textLength: 108 } : { size };
+};
+
+// A five-point star (podium finishes, like the stars above a club crest).
+const star = (cx: number, cy: number, r: number) =>
+  Array.from({ length: 10 }, (_, i) => {
+    const radius = i % 2 === 0 ? r : r * 0.45;
+    const angle = (Math.PI / 5) * i - Math.PI / 2;
+    return `${i === 0 ? "M" : "L"}${(cx + radius * Math.cos(angle)).toFixed(2)} ${(cy + radius * Math.sin(angle)).toFixed(2)}`;
+  }).join(" ") + "Z";
+
+const shirts = players.map((p) => ({
+  ...p,
+  name: p.shortName.toUpperCase(),
+  fit: nameFit(p.shortName),
+  // Every shirt sways at its own pace.
+  sway: (2.4 + ((p.index * 7) % 5) * 0.35).toFixed(2),
+}));
+---
+
+<div class="dressing-room relative overflow-hidden rounded-3xl" data-dressing>
+  <!-- Shared paint for every shirt. -->
+  <svg class="absolute size-0" aria-hidden="true" focusable="false">
+    <defs>
+      <pattern id="dr-stripes" width="32" height="10" patternUnits="userSpaceOnUse">
+        <rect width="16" height="10" fill="rgb(255 255 255 / 0.05)"></rect>
+      </pattern>
+      <linearGradient id="dr-shade" x1="0" x2="1" y1="0" y2="0">
+        <stop offset="0" stop-color="#000" stop-opacity="0.45"></stop>
+        <stop offset="0.22" stop-color="#000" stop-opacity="0"></stop>
+        <stop offset="0.5" stop-color="#fff" stop-opacity="0.07"></stop>
+        <stop offset="0.78" stop-color="#000" stop-opacity="0"></stop>
+        <stop offset="1" stop-color="#000" stop-opacity="0.45"></stop>
+      </linearGradient>
+      <linearGradient id="dr-drape" x1="0" x2="0" y1="0" y2="1">
+        <stop offset="0.35" stop-color="#000" stop-opacity="0"></stop>
+        <stop offset="1" stop-color="#000" stop-opacity="0.35"></stop>
+      </linearGradient>
+      <clipPath id="dr-clip-front"><path d={FRONT}></path></clipPath>
+      <clipPath id="dr-clip-back"><path d={BACK}></path></clipPath>
+    </defs>
+  </svg>
+
+  <p class="room-sign">Home · Dressing room</p>
+
+  <ul class="relative z-10 grid grid-cols-2 sm:grid-cols-4">
+    {
+      shirts.map((s) => (
+        <li class="bay" style={`--i:${s.index};--sway:${s.sway}s`}>
+          <button
+            type="button"
+            class="shirt"
+            data-shirt={s.index}
+            aria-label={`${s.shortName}, number ${s.number}${s.podium ? ", hackathon podium" : ""}. Open scouting report`}
+          >
+            <svg class="peg" viewBox="0 0 200 230" aria-hidden="true">
+              <circle cx="100" cy="9" r="3.4" fill="#d8b56a" stroke="#6b5326" stroke-width="1"></circle>
+            </svg>
+            <span class="shirt-drop">
+              <span class="shirt-sway">
+                <span class="shirt-flip">
+                  {/* Front: crest, kit mark, sponsor. */}
+                  <svg class="shirt-face shirt-front" viewBox="0 0 200 230" aria-hidden="true">
+                    <path d="M78 32 Q100 44 122 32 Q100 62 78 32Z" fill="#06150f"></path>
+                    <rect x="84" y="35" width="32" height="4" rx="1" fill="#5a3c22"></rect>
+                    <rect x="97" y="39" width="6" height="3" fill="#c8ff3d" opacity="0.8"></rect>
+                    <path d="M100 38 V14 A5 5 0 1 1 105 9" fill="none" stroke="#b9c3bd" stroke-width="2.2" stroke-linecap="round"></path>
+                    <path d={FRONT} fill="#154231"></path>
+                    <g clip-path="url(#dr-clip-front)">
+                      <rect width="200" height="230" fill="url(#dr-stripes)"></rect>
+                      <path d="M68 110 Q64 170 70 222 M132 110 Q137 170 130 222" stroke="#000" stroke-opacity="0.12" stroke-width="7" fill="none"></path>
+                      <rect width="200" height="230" fill="url(#dr-shade)"></rect>
+                      <rect width="200" height="230" fill="url(#dr-drape)"></rect>
+                      <path d="M6 92 L30 108 M194 92 L170 108" stroke="#c8ff3d" stroke-width="7"></path>
+                    </g>
+                    <path d="M78 32 Q100 62 122 32" fill="none" stroke="#c8ff3d" stroke-width="5" stroke-linecap="round"></path>
+                    <path d={FRONT} fill="none" stroke="#000" stroke-opacity="0.35" stroke-width="1.5"></path>
+                    <circle cx="66" cy="80" r="5" fill="none" stroke="#c8ff3d" stroke-width="1.6"></circle>
+                    <path d="M66 77.5 l2.4 1.7 -0.9 2.8 h-3 l-0.9 -2.8z" fill="#c8ff3d"></path>
+                    <path d="M124 70 h20 v10 q0 10 -10 15 q-10 -5 -10 -15z" fill="#0a1f17" stroke="#c8ff3d" stroke-width="1.6"></path>
+                    <text x="134" y="86" text-anchor="middle" font-size="12" font-weight="900" fill="#c8ff3d" class="shirt-type">H</text>
+                    {s.podium && <path d={star(134, 62, 4.5)} fill="#ffb020"></path>}
+                    <text x="100" y="146" text-anchor="middle" font-size="30" font-weight="800" fill="#e8efe9" fill-opacity="0.9" class="shirt-mono">&lt;/&gt;</text>
+                  </svg>
+
+                  {/* Back: name over the shoulders, the number. */}
+                  <svg class="shirt-face shirt-back" viewBox="0 0 200 230" aria-hidden="true">
+                    <path d="M100 38 V14 A5 5 0 1 0 95 9" fill="none" stroke="#b9c3bd" stroke-width="2.2" stroke-linecap="round"></path>
+                    <path d={BACK} fill="#154231"></path>
+                    <g clip-path="url(#dr-clip-back)">
+                      <rect width="200" height="230" fill="url(#dr-stripes)"></rect>
+                      <path d="M68 110 Q64 170 70 222 M132 110 Q137 170 130 222" stroke="#000" stroke-opacity="0.12" stroke-width="7" fill="none"></path>
+                      <rect width="200" height="230" fill="url(#dr-shade)"></rect>
+                      <rect width="200" height="230" fill="url(#dr-drape)"></rect>
+                      <path d="M6 92 L30 108 M194 92 L170 108" stroke="#c8ff3d" stroke-width="7"></path>
+                    </g>
+                    <path d="M78 32 Q100 42 122 32" fill="none" stroke="#c8ff3d" stroke-width="5" stroke-linecap="round"></path>
+                    <path d={BACK} fill="none" stroke="#000" stroke-opacity="0.35" stroke-width="1.5"></path>
+                    <path id={`dr-arc-${s.index}`} d="M46 76 Q100 60 154 76" fill="none"></path>
+                    <text
+                      font-size={s.fit.size}
+                      font-weight="900"
+                      fill="#c8ff3d"
+                      stroke="#0a1f17"
+                      stroke-width="2.5"
+                      paint-order="stroke"
+                      class="shirt-type"
+                    >
+                      <textPath
+                        href={`#dr-arc-${s.index}`}
+                        startOffset="50%"
+                        text-anchor="middle"
+                        textLength={s.fit.textLength}
+                        lengthAdjust={s.fit.textLength ? "spacingAndGlyphs" : undefined}
+                      >
+                        {s.name}
+                      </textPath>
+                    </text>
+                    <text x="102" y="174" text-anchor="middle" font-size="92" font-weight="900" fill="#000" fill-opacity="0.3" class="shirt-type">
+                      {s.number}
+                    </text>
+                    <text
+                      x="100"
+                      y="172"
+                      text-anchor="middle"
+                      font-size="92"
+                      font-weight="900"
+                      fill="#c8ff3d"
+                      stroke="#0a1f17"
+                      stroke-width="3"
+                      paint-order="stroke"
+                      class="shirt-type"
+                    >
+                      {s.number}
+                    </text>
+                    {s.podium && <path d={star(100, 196, 6)} fill="#ffb020"></path>}
+                  </svg>
+                </span>
+              </span>
+            </span>
+          </button>
+        </li>
+      ))
+    }
+  </ul>
+
+  <div class="bench relative z-10" aria-hidden="true">
+    <span class="bench-top"></span>
+    <span class="bench-leg left-[8%]"></span>
+    <span class="bench-leg right-[8%]"></span>
+    <span class="bench-ball"><Ball size={26} /></span>
+  </div>
+</div>
+
+<p class="mt-3 text-center font-mono text-xs text-muted">
+  <span class="hint-hover">Hover a shirt to turn it round · click to scout the player</span>
+  <span class="hint-touch">Tap a shirt to turn it round · tap again to scout the player</span>
+</p>
+
+<script>
+  // Shirts drop onto their pegs the first time the room comes into view.
+  const room = document.querySelector<HTMLElement>("[data-dressing]");
+  const shirts = room?.querySelectorAll<HTMLButtonElement>("[data-shirt]") ?? [];
+
+  if (room && "IntersectionObserver" in window) {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry?.isIntersecting) return;
+        room.classList.add("is-hung");
+        observer.disconnect();
+      },
+      { threshold: 0.2 },
+    );
+    observer.observe(room);
+  } else {
+    room?.classList.add("is-hung");
+  }
+
+  // With a mouse, hover turns the shirt and a click scouts. On touch screens
+  // the first tap turns it round, the second one scouts.
+  const canHover = window.matchMedia("(hover: hover)").matches;
+  shirts.forEach((shirt) =>
+    shirt.addEventListener("click", () => {
+      if (!canHover && !shirt.classList.contains("is-flipped")) {
+        shirts.forEach((s) => s.classList.toggle("is-flipped", s === shirt));
+        return;
+      }
+      document.dispatchEvent(
+        new CustomEvent("matchday:scout", { detail: { index: shirt.dataset.shirt } }),
+      );
+    }),
+  );
+</script>
+
+<style>
+  /* The room: painted wooden wall, a warm ceiling light, tiled floor. */
+  .dressing-room {
+    padding: 3.25rem 0.5rem 0;
+    background:
+      radial-gradient(120% 60% at 50% 0%, rgb(200 255 61 / 0.07), transparent 70%),
+      linear-gradient(180deg, transparent 75%, rgb(0 0 0 / 0.35)),
+      repeating-linear-gradient(90deg, #102d22 0 46px, #0b231a 46px 48px);
+    box-shadow:
+      inset 0 0 0 1px rgb(232 239 233 / 0.08),
+      inset 0 0 120px rgb(0 0 0 / 0.5);
+  }
+
+  @media (min-width: 640px) {
+    .dressing-room {
+      padding-inline: 1.5rem;
+    }
+  }
+
+  .room-sign {
+    position: absolute;
+    top: 1rem;
+    left: 1.25rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 0.3rem;
+    background: #0a1f17;
+    box-shadow: inset 0 0 0 1px rgb(200 255 61 / 0.35);
+    color: var(--color-floodlight);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+
+  .shirt-type {
+    font-family: var(--font-display);
+  }
+
+  .shirt-mono {
+    font-family: var(--font-mono);
+  }
+
+  /* One peg per bay on a wooden rail. The rail sits at the hook's height:
+     the shirt is as wide as the bay, and 200 viewBox units = 100cqw. */
+  .bay {
+    position: relative;
+    container-type: inline-size;
+    padding: 0 0.5rem 1.25rem;
+  }
+
+  .bay::before {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    top: calc(1.5cqw);
+    height: 6cqw;
+    background: linear-gradient(180deg, #6b4a2e, #3f2a19 70%, #2a1b10);
+    box-shadow: 0 4px 8px rgb(0 0 0 / 0.45);
+  }
+
+  /* A soft spotlight from above each bay, brighter on the shirt in focus. */
+  .bay::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(60% 55% at 50% 30%, rgb(200 255 61 / 0.1), transparent 70%);
+    opacity: 0.35;
+    transition: opacity 400ms;
+  }
+
+  .bay:has(.shirt:hover)::after,
+  .bay:has(.shirt:focus-visible)::after,
+  .bay:has(.shirt.is-flipped)::after {
+    opacity: 1;
+  }
+
+  .shirt {
+    position: relative;
+    z-index: 1; /* above the bay's rail and spotlight */
+    display: block;
+    width: 100%;
+    cursor: pointer;
+    outline: none;
+  }
+
+  .peg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+  }
+
+  .shirt-drop,
+  .shirt-sway,
+  .shirt-flip {
+    display: block;
+    transform-origin: 50% 3.9%; /* the peg */
+  }
+
+  .shirt-sway {
+    perspective: 900px;
+    filter: drop-shadow(0 14px 14px rgb(0 0 0 / 0.5));
+    animation: shirt-sway var(--sway) ease-in-out infinite alternate;
+  }
+
+  .shirt-flip {
+    position: relative;
+    aspect-ratio: 200 / 230;
+    transform-style: preserve-3d;
+    transition: transform 900ms cubic-bezier(0.3, 1.18, 0.45, 1);
+  }
+
+  /* Both faces in 3D; the visibility switch at the half-way point keeps
+     Safari from showing both at once. */
+  .shirt-face {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    transition: visibility 0s linear 130ms; /* edge-on at ~130ms of the turn */
+  }
+
+  .shirt-back {
+    transform: rotateY(180deg);
+    visibility: hidden;
+  }
+
+  .shirt.is-flipped .shirt-flip,
+  .shirt:focus-visible .shirt-flip {
+    transform: translateY(-4px) rotateY(180deg) scale(1.04);
+  }
+
+  .shirt.is-flipped .shirt-sway,
+  .shirt:focus-visible .shirt-sway {
+    animation-play-state: paused;
+  }
+
+  .shirt.is-flipped .shirt-front,
+  .shirt:focus-visible .shirt-front {
+    visibility: hidden;
+  }
+
+  .shirt.is-flipped .shirt-back,
+  .shirt:focus-visible .shirt-back {
+    visibility: visible;
+  }
+
+  @media (hover: hover) {
+    .shirt:hover .shirt-flip {
+      transform: translateY(-4px) rotateY(180deg) scale(1.04);
+    }
+
+    .shirt:hover .shirt-sway {
+      animation-play-state: paused;
+    }
+
+    .shirt:hover .shirt-front {
+      visibility: hidden;
+    }
+
+    .shirt:hover .shirt-back {
+      visibility: visible;
+    }
+  }
+
+  .shirt:focus-visible .shirt-sway {
+    filter: drop-shadow(0 0 10px rgb(200 255 61 / 0.55)) drop-shadow(0 14px 14px rgb(0 0 0 / 0.5));
+  }
+
+  /* The penalty game's "See it on the pitch" rings a shirt with light. */
+  .shirt:global(.spotlit) {
+    outline: none;
+  }
+
+  .shirt:global(.spotlit) .shirt-sway {
+    filter: drop-shadow(0 0 14px rgb(200 255 61 / 0.7)) drop-shadow(0 14px 14px rgb(0 0 0 / 0.5));
+  }
+
+  @keyframes shirt-sway {
+    from {
+      transform: rotate(-1.4deg);
+    }
+    to {
+      transform: rotate(1.4deg);
+    }
+  }
+
+  /* First visit: the kit man hangs the shirts one by one. */
+  @media (prefers-reduced-motion: no-preference) {
+    :global(html.js) .dressing-room:not(.is-hung) .shirt-drop {
+      opacity: 0;
+    }
+
+    .dressing-room.is-hung .shirt-drop {
+      animation: shirt-drop 750ms cubic-bezier(0.3, 1.5, 0.5, 1) both;
+      animation-delay: calc(var(--i) * 90ms);
+    }
+  }
+
+  @keyframes shirt-drop {
+    from {
+      opacity: 0;
+      transform: translateY(-36px) rotate(-10deg);
+    }
+    40% {
+      opacity: 1;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .shirt-sway {
+      animation: none;
+    }
+
+    .shirt-flip {
+      transition: none;
+    }
+
+    .shirt-face {
+      transition: none;
+    }
+  }
+
+  /* The bench along the bottom, with a ball left on it. */
+  .bench {
+    height: 3.25rem;
+    margin-inline: 0.5rem;
+  }
+
+  .bench-top {
+    position: absolute;
+    inset-inline: 0;
+    top: 0.75rem;
+    height: 0.75rem;
+    border-radius: 0.3rem;
+    background: linear-gradient(180deg, #7a5536, #4a311d);
+    box-shadow: 0 6px 12px rgb(0 0 0 / 0.5);
+  }
+
+  .bench-leg {
+    position: absolute;
+    top: 1.4rem;
+    bottom: 0;
+    width: 0.6rem;
+    background: #2e1f13;
+  }
+
+  .bench-ball {
+    position: absolute;
+    right: 14%;
+    top: -0.85rem;
+    filter: drop-shadow(0 4px 3px rgb(0 0 0 / 0.5));
+  }
+
+  .hint-touch {
+    display: none;
+  }
+
+  @media (hover: none) {
+    .hint-hover {
+      display: none;
+    }
+
+    .hint-touch {
+      display: inline;
+    }
+  }
+</style>
