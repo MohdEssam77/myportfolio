@@ -163,11 +163,19 @@ const findCard = (f: Fact, i: number) => {
     return card && { card, mark: card, focus: card, align: "start" as const };
   }
   if (f.kind === "Project") {
-    // The pitch on desktop, the vertical pitch on phones, or the list view.
+    // The pitch on desktop, the vertical pitch on phones, the dressing room
+    // or the list view.
     const card = [
-      ...document.querySelectorAll<HTMLElement>(`[data-project="${i}"], [data-list-card="${i}"]`),
+      ...document.querySelectorAll<HTMLElement>(
+        `[data-project="${i}"], [data-shirt="${i}"], [data-list-card="${i}"]`,
+      ),
     ].find(shown);
     if (!card) return null;
+    if (card.matches("[data-shirt]")) {
+      // Turn the shirt round so the name and number show.
+      card.classList.add("is-flipped");
+      setTimeout(() => card.classList.remove("is-flipped"), 4000);
+    }
     const mark = card.querySelector<HTMLElement>(".jersey") ?? card;
     return { card, mark, focus: card, align: "center" as const };
   }
